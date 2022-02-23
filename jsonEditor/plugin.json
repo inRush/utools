@@ -1,0 +1,29 @@
+{
+    "main": "index.html",
+    "platform": [
+        "win32",
+        "darwin",
+        "linux"
+    ],
+    "development": {
+        "main": ""
+    },
+    "pluginSetting": {
+        "single": true,
+        "height": 0
+    },
+    "features": [
+        {
+            "code": "json",
+            "explain": "json编辑器",
+            "platform": [
+                "win32",
+                "darwin",
+                "linux"
+            ],
+            "cmds": [
+                "json"
+            ]
+        }
+    ]
+}
