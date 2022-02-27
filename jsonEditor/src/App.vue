@@ -2,7 +2,11 @@
 import JsonViewer from '@/components/JsonViewer.vue'
 import { ref } from "vue";
 
-const content = ref('{"b":1,"a":2}')
+const content = ref();
+
+utools.onPluginEnter(({code, type, payload}) => {
+  content.value = payload;
+})
 </script>
 
 <template>
