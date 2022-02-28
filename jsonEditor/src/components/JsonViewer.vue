@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, Ref, ref } from "vue";
+import { onMounted, Ref, ref, watch } from "vue";
 import * as Json from '../tools/json';
 import * as monaco from 'monaco-editor';
 
@@ -29,6 +29,10 @@ const container: Ref<HTMLElement | null> = ref(null);
 const emit = defineEmits<{
   (e: 'input', value: string | undefined): void
 }>()
+// watch
+watch(() => props.value, () => {
+  editor?.setValue(Json.beautify(props.value) || props.value);
+})
 
 // method
 function format() {
@@ -51,6 +55,64 @@ function compress() {
   compressCode && editor?.setValue(compressCode)
 }
 
+function convertBase64() {
+  let jsonValue = editor?.getValue();
+  if (!jsonValue) {
+    return;
+  }
+  try {
+    let json = JSON.parse(jsonValue);
+    loopConvertBase64(json);
+    editor?.executeEdits('', [{
+      // @ts-ignore
+      range: editor?.getModel()?.getFullModelRange(),
+      text: JSON.stringify(json, null, 4)
+    }])
+
+  } catch (e) {
+  }
+}
+
+function isBase64(str: string) {
+  if (str === '' || str.trim() === '') {
+    return false;
+  }
+  try {
+    return btoa(atob(str)) == str;
+  } catch (err) {
+    return false;
+  }
+}
+
+function b64_to_utf8(str: string) {
+  return decodeURIComponent(window.escape(window.atob(str)));
+}
+
+function loopConvertBase64(json: any) {
+  if (typeof json === 'string') {
+    return;
+  }
+  for (let key in json) {
+    if (!json.hasOwnProperty(key)) {
+      continue;
+    }
+    if (typeof json[key] === 'object') {
+      if (json[key].length) {
+
+      } else {
+        loopConvertBase64(json[key]);
+      }
+    } else if (typeof json[key] === 'string' && isBase64(json[key])) {
+      try {
+        let decodeStr = b64_to_utf8(json[key]);
+        json[key] = JSON.parse(decodeStr);
+        loopConvertBase64(json[key]);
+      } catch (e) {
+      }
+    }
+  }
+}
+
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
   validate: false,
   allowComments: true
@@ -66,7 +128,7 @@ onMounted(() => {
     }
     editor = monaco.editor.create(container.value, {
       model: jsonModel,
-      tabSize: 2,
+      tabSize: 4,
       automaticLayout: true,
       scrollBeyondLastLine: false,
       minimap: {enabled: false},
@@ -89,6 +151,7 @@ onMounted(() => {
       <span class="tool-item" @click="compress">压缩</span>
       <span class="tool-item" @click="escape">转义</span>
       <span class="tool-item" @click="clearEscape">去转义</span>
+      <span class="tool-item" @click="convertBase64">去base64</span>
     </div>
   </div>
 </template>
@@ -121,6 +184,7 @@ onMounted(() => {
     padding: 0;
     height: 30px;
     width: 100%;
+    color: #fff;
 
     .tool-item {
       display: inline-block;
@@ -128,7 +192,7 @@ onMounted(() => {
       height: 30px;
       line-height: 30px;
       padding: 0 0.5rem;
-      border: #333 1px solid;
+      border: #fff 1px solid;
     }
   }
 }

@@ -3,18 +3,22 @@ import prettier from "prettier/standalone";
 // @ts-ignore
 import parserJson5 from "prettier/parser-babel";
 
-export const beautify = (code: string | undefined, {tab = 2} = {}) => {
+export const beautify = (code: string | undefined, {tab = 4} = {}) => {
   if (!code) {
     return code;
   }
-  return prettier.format(code, {
-    parser: "json5",
-    plugins: [parserJson5],
-    quoteProps: "preserve",
-    trailingComma: "none",
-    tabWidth: tab,
-    printWidth: 1
-  });
+  try {
+    return prettier.format(code, {
+      parser: "json5",
+      plugins: [parserJson5],
+      quoteProps: "preserve",
+      trailingComma: "none",
+      tabWidth: tab,
+      printWidth: 1
+    });
+  }catch (e){
+    return code;
+  }
 }
 export const objectBeautify = (codeObject: object, option = {}) => {
   return beautify(JSON.stringify(codeObject), option)
@@ -43,35 +47,6 @@ export const escape = (content: string | undefined) => {
 // 去转义
 export const clearEscape = (content: string | undefined) => {
   return content?.trim().replace(/\\\\/g, '\\').replace(/\\"/g, '"')
-}
-
-
-const modes: any = {
-  text: "text/plain",
-  json: "application/json",
-  js: "application/javascript",
-  html: "text/html",
-  xml: "application/xml",
-  css: "text/css",
-  less: "text/x-less",
-  scss: "text/x-scss",
-  graphql: "graphql",
-  java: "text/x-java",
-  ruby: "text/x-ruby",
-  markdown: "text/x-markdown",
-  php: "text/x-php",
-  python: "text/x-python",
-  sql: "text/x-sql",
-  yaml: "text/x-yaml",
-  ts: "application/typescript",
-  csharp: "text/x-csharp",
-  go: "text/x-go",
-  dart: "application/dart",
-  vue: "text/x-vue",
-};
-
-const modeConversion = (lang: string) => {
-  return lang && (lang in modes) ? modes[lang] : 'text/plain'
 }
 
 

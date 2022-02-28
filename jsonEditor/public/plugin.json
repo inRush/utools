@@ -7,7 +7,7 @@
         "linux"
     ],
     "development": {
-        "main": ""
+        "main": "http://localhost:3000"
     },
     "pluginSetting": {
         "single": true,
@@ -23,7 +23,13 @@
                 "linux"
             ],
             "cmds": [
-                "json"
+                "json",
+                {
+                    "type": "regex",
+                    "label": "JSON",
+                    "match": "/^(?={)[\\s\\S]*(?<=})[\\r]*[\\n]*|^(?=\\[)[\\s\\S]*(?<=\\])[\\r]*[\\n]*/i",
+                    "minLength": 2
+                }
             ]
         }
     ]
