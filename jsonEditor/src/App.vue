@@ -10,7 +10,7 @@ utools.onPluginEnter(({code, type, payload}) => {
 </script>
 
 <template>
-  <json-viewer :placeholder="'请输入JSON'" v-model:value="content" language="json"></json-viewer>
+  <json-viewer v-model:value="content"></json-viewer>
 </template>
 
 <style>

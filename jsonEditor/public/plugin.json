@@ -15,7 +15,7 @@
     },
     "features": [
         {
-            "code": "JsonEditor",
+            "code": "Json编辑器",
             "explain": "json编辑器",
             "platform": [
                 "win32",
@@ -23,7 +23,7 @@
                 "linux"
             ],
             "cmds": [
-                "json",
+                "Json",
                 {
                     "type": "regex",
                     "label": "JSON",
