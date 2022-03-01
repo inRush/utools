@@ -113,6 +113,15 @@ function loopConvertBase64(json: any) {
   }
 }
 
+function selectedMultipleCursors() {
+  editor?.getAction("editor.action.insertCursorAtEndOfEachLineSelected").run();
+  editor?.focus()
+}
+
+function inputMultipleCursors(){
+
+}
+
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
   validate: false,
   allowComments: true
@@ -152,6 +161,8 @@ onMounted(() => {
       <span class="tool-item" @click="escape">转义</span>
       <span class="tool-item" @click="clearEscape">去转义</span>
       <span class="tool-item" @click="convertBase64">去base64</span>
+      <span class="tool-item" @click="selectedMultipleCursors">选中多光标</span>
+      <span class="tool-item" @click="inputMultipleCursors">输入多光标</span>
     </div>
   </div>
 </template>
