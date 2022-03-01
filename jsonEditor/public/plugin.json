@@ -10,7 +10,7 @@
         "main": "http://localhost:3000"
     },
     "pluginSetting": {
-        "single": true,
+        "single": false,
         "height": 0
     },
     "features": [
