@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, Ref, ref, watch } from "vue";
+import { onMounted, reactive, Ref, ref, watch, nextTick, onDeactivated } from "vue";
 import * as Json from '../tools/json';
 import * as monaco from 'monaco-editor';
 
@@ -22,7 +22,9 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {});
 // data
-let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+let editor: monaco.editor.IStandaloneCodeEditor;
+let openMultipleCursorDialog = ref(false), openHistoryDialog = ref(false);
+let multipleCursorPoints = reactive({start: undefined, end: undefined});
 // refs
 const container: Ref<HTMLElement | null> = ref(null);
 // emits
@@ -113,20 +115,55 @@ function loopConvertBase64(json: any) {
   }
 }
 
-function selectedMultipleCursors() {
-  editor?.getAction("editor.action.insertCursorAtEndOfEachLineSelected").run();
-  editor?.focus()
-}
-
-function inputMultipleCursors(){
-
+function multipleCursors(points: { start: number, end: number }) {
+  if (points) {
+    openMultipleCursorDialog.value = false;
+    if (points.end <= points.start) {
+      return;
+    }
+    if (points.start < 1) {
+      points.start = 1;
+    }
+    let lineCount = editor.getModel()?.getLineCount() || 0;
+    if (points.end > lineCount) {
+      points.end = lineCount;
+    }
+    if (points.start > points.end) {
+      points.start = points.end;
+    }
+    let selections: monaco.ISelection[] = [];
+    for (let i = points.start; i <= points.end; i++) {
+      let lineContent = editor.getModel()?.getLineContent(i) || "";
+      const endOfLineColNumber = lineContent.length + 1;
+      selections.push(new monaco.Selection(i, endOfLineColNumber, i, endOfLineColNumber));
+    }
+    editor.setSelections(selections)
+    nextTick(() => {
+      editor?.focus();
+    });
+    return;
+  }
+  let selections = editor.getSelections();
+  if (selections) {
+    if (selections.length > 1) {
+      editor.setSelections([selections[0]])
+      openMultipleCursorDialog.value = true;
+      return;
+    }
+    let selection = selections[0];
+    if (selection.startLineNumber != selection.endLineNumber) {
+      editor?.getAction("editor.action.insertCursorAtEndOfEachLineSelected").run();
+      editor?.focus()
+    } else {
+      openMultipleCursorDialog.value = true;
+    }
+  }
 }
 
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-  validate: false,
+  validate: true,
   allowComments: true
 });
-
 
 // life cycle
 onMounted(() => {
@@ -148,65 +185,162 @@ onMounted(() => {
     })
   }
 })
+onDeactivated(() => {
+  editor?.dispose();
+})
 </script>
 
 <template>
-  <div class="json-editor">
+  <div style="height: 100vh" class="d-flex flex-column ">
     <div class="editor-wrapper">
       <div ref="container" class="code-editor"></div>
     </div>
-    <div class="tools">
-      <span class="tool-item" @click="format">格式化</span>
-      <span class="tool-item" @click="compress">压缩</span>
-      <span class="tool-item" @click="escape">转义</span>
-      <span class="tool-item" @click="clearEscape">去转义</span>
-      <span class="tool-item" @click="convertBase64">去base64</span>
-      <span class="tool-item" @click="selectedMultipleCursors">选中多光标</span>
-      <span class="tool-item" @click="inputMultipleCursors">输入多光标</span>
+    <div class="tools-list">
+      <v-btn color="blue" variant="text" @click="format">格式化</v-btn>
+      <v-btn color="blue" variant="text" @click="compress">压缩</v-btn>
+      <v-btn color="blue" variant="text" @click="escape">转义</v-btn>
+      <v-btn color="blue" variant="text" @click="clearEscape">去转义</v-btn>
+      <v-btn color="blue" variant="text" @click="convertBase64">去base64</v-btn>
+      <v-btn color="blue" variant="text" @click="multipleCursors(null)">多光标</v-btn>
     </div>
+    <div class="tools-point">
+      <v-btn class="mx-2" icon="mdi-history" color="cyan" size="x-small" @click="openHistoryDialog=true">
+      </v-btn>
+    </div>
+    <v-dialog v-model="openMultipleCursorDialog" persistent>
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"
+                              label="起始行" required type="number"
+                              hide-details></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required
+                              type="number"
+                              hide-details></v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">
+            关闭
+          </v-btn>
+          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">
+            确认
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="openHistoryDialog">
+      <v-card class="mx-auto history-list" max-width="400" max-height="300" tile>
+        <v-list border>
+          <v-list-subheader>历史记录</v-list-subheader>
+          <div class="history-list-item-wrapper">
+            <v-list-item two-line :value="1">
+              <v-list-item-header>
+                <v-list-item-title>
+                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
+                  15:35:00 西安-阿勒泰 航班号：MU2377
+                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
+                </v-list-item-title>
+                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+            <v-list-item two-line :value="2">
+              <v-list-item-header>
+                <v-list-item-title>
+                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
+                  15:35:00 西安-阿勒泰 航班号：MU2377
+                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
+                </v-list-item-title>
+                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+            <v-list-item two-line :value="3">
+              <v-list-item-header>
+                <v-list-item-title>
+                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
+                  15:35:00 西安-阿勒泰 航班号：MU2377
+                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
+                </v-list-item-title>
+                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+            <v-list-item two-line :value="4">
+              <v-list-item-header>
+                <v-list-item-title>
+                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
+                  15:35:00 西安-阿勒泰 航班号：MU2377
+                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
+                </v-list-item-title>
+                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+            <v-list-item two-line :value="4">
+              <v-list-item-header>
+                <v-list-item-title>
+                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
+                  15:35:00 西安-阿勒泰 航班号：MU2377
+                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
+                </v-list-item-title>
+                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
+              </v-list-item-header>
+            </v-list-item>
+          </div>
+        </v-list>
+
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
-<style lang="scss">
-.CodeMirror {
-  height: 100%;
+<style lang="scss" scoped>
+$tools-list-height: 36px;
+$tools-point-bottom: 10px;
+$tools-point-right: 10px;
+$history-list-height: 300px;
+$history-list-header-height: 48px;
 
-  pre.CodeMirror-placeholder {
-    color: #999;
-  }
-}
-
-.json-editor {
-  display: flex;
+.editor-wrapper {
   height: 100%;
   width: 100%;
-  flex-direction: column;
-  overflow: hidden;
+  padding-bottom: $tools-list-height;
 
-  .editor-wrapper {
-    flex: 1;
-
-    .code-editor {
-      height: 100%;
-    }
-  }
-
-  .tools {
-    padding: 0;
-    height: 30px;
+  .code-editor {
+    height: 100%;
     width: 100%;
-    color: #fff;
-
-    .tool-item {
-      display: inline-block;
-      cursor: pointer;
-      height: 30px;
-      line-height: 30px;
-      padding: 0 0.5rem;
-      border: #fff 1px solid;
-    }
   }
 }
+
+.tools-list {
+  height: $tools-list-height;
+  position: absolute;
+  bottom: 0;
+}
+
+.tools-point {
+  position: absolute;
+  right: $tools-point-right;
+  bottom: calc(#{$tools-list-height} + #{$tools-point-right});
+}
+
+.v-text-field input {
+  color: #fff !important;
+}
+
+.history-list-item-wrapper {
+  overflow-y: scroll !important;
+  height: calc(#{$history-list-height} - #{$history-list-header-height}  - 9px);
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 
 </style>
 

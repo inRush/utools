@@ -16,7 +16,7 @@ export const beautify = (code: string | undefined, {tab = 4} = {}) => {
       tabWidth: tab,
       printWidth: 1
     });
-  }catch (e){
+  } catch (e) {
     return code;
   }
 }
