@@ -2,6 +2,7 @@
 import { onMounted, reactive, Ref, ref, watch, nextTick, onDeactivated } from "vue";
 import * as Json from '../tools/json';
 import * as monaco from 'monaco-editor';
+import HistoryPanel from './HistoryPanel.vue'
 
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
@@ -23,7 +24,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {});
 // data
 let editor: monaco.editor.IStandaloneCodeEditor;
-let openMultipleCursorDialog = ref(false), openHistoryDialog = ref(false);
+let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
 // refs
 const container: Ref<HTMLElement | null> = ref(null);
@@ -204,98 +205,99 @@ onDeactivated(() => {
       <v-btn color="blue" variant="text" @click="multipleCursors(null)">多光标</v-btn>
     </div>
     <div class="tools-point">
-      <v-btn class="mx-2" icon="mdi-history" color="cyan" size="x-small" @click="openHistoryDialog=true">
+      <v-btn class="mx-2" icon="mdi-history" color="cyan" size="x-small" @click="openHistoryPanel=true">
       </v-btn>
     </div>
-    <v-dialog v-model="openMultipleCursorDialog" persistent>
-      <v-card>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"
-                              label="起始行" required type="number"
-                              hide-details></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required
-                              type="number"
-                              hide-details></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">
-            关闭
-          </v-btn>
-          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">
-            确认
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="openHistoryDialog">
-      <v-card class="mx-auto history-list" max-width="400" max-height="300" tile>
-        <v-list border>
-          <v-list-subheader>历史记录</v-list-subheader>
-          <div class="history-list-item-wrapper">
-            <v-list-item two-line :value="1">
-              <v-list-item-header>
-                <v-list-item-title>
-                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
-                  15:35:00 西安-阿勒泰 航班号：MU2377
-                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
-                </v-list-item-title>
-                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
-              </v-list-item-header>
-            </v-list-item>
-            <v-list-item two-line :value="2">
-              <v-list-item-header>
-                <v-list-item-title>
-                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
-                  15:35:00 西安-阿勒泰 航班号：MU2377
-                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
-                </v-list-item-title>
-                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
-              </v-list-item-header>
-            </v-list-item>
-            <v-list-item two-line :value="3">
-              <v-list-item-header>
-                <v-list-item-title>
-                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
-                  15:35:00 西安-阿勒泰 航班号：MU2377
-                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
-                </v-list-item-title>
-                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
-              </v-list-item-header>
-            </v-list-item>
-            <v-list-item two-line :value="4">
-              <v-list-item-header>
-                <v-list-item-title>
-                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
-                  15:35:00 西安-阿勒泰 航班号：MU2377
-                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
-                </v-list-item-title>
-                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
-              </v-list-item-header>
-            </v-list-item>
-            <v-list-item two-line :value="4">
-              <v-list-item-header>
-                <v-list-item-title>
-                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25
-                  15:35:00 西安-阿勒泰 航班号：MU2377
-                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}
-                </v-list-item-title>
-                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>
-              </v-list-item-header>
-            </v-list-item>
-          </div>
-        </v-list>
+    <history-panel v-model:show="openHistoryPanel"/>
+    <!--    <v-dialog v-model="openMultipleCursorDialog" persistent>-->
+    <!--      <v-card>-->
+    <!--        <v-card-text>-->
+    <!--          <v-container>-->
+    <!--            <v-row>-->
+    <!--              <v-col cols="12">-->
+    <!--                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"-->
+    <!--                              label="起始行" required type="number"-->
+    <!--                              hide-details></v-text-field>-->
+    <!--              </v-col>-->
+    <!--              <v-col cols="12">-->
+    <!--                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required-->
+    <!--                              type="number"-->
+    <!--                              hide-details></v-text-field>-->
+    <!--              </v-col>-->
+    <!--            </v-row>-->
+    <!--          </v-container>-->
+    <!--        </v-card-text>-->
+    <!--        <v-card-actions>-->
+    <!--          <v-spacer></v-spacer>-->
+    <!--          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">-->
+    <!--            关闭-->
+    <!--          </v-btn>-->
+    <!--          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">-->
+    <!--            确认-->
+    <!--          </v-btn>-->
+    <!--        </v-card-actions>-->
+    <!--      </v-card>-->
+    <!--    </v-dialog>-->
+    <!--    <v-dialog v-model="openHistoryDialog">-->
+    <!--      <v-card class="mx-auto history-list" max-width="400" max-height="300" tile>-->
+    <!--        <v-list border>-->
+    <!--          <v-list-subheader>历史记录</v-list-subheader>-->
+    <!--          <div class="history-list-item-wrapper">-->
+    <!--            <v-list-item two-line :value="1">-->
+    <!--              <v-list-item-header>-->
+    <!--                <v-list-item-title>-->
+    <!--                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25-->
+    <!--                  15:35:00 西安-阿勒泰 航班号：MU2377-->
+    <!--                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}-->
+    <!--                </v-list-item-title>-->
+    <!--                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>-->
+    <!--              </v-list-item-header>-->
+    <!--            </v-list-item>-->
+    <!--            <v-list-item two-line :value="2">-->
+    <!--              <v-list-item-header>-->
+    <!--                <v-list-item-title>-->
+    <!--                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25-->
+    <!--                  15:35:00 西安-阿勒泰 航班号：MU2377-->
+    <!--                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}-->
+    <!--                </v-list-item-title>-->
+    <!--                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>-->
+    <!--              </v-list-item-header>-->
+    <!--            </v-list-item>-->
+    <!--            <v-list-item two-line :value="3">-->
+    <!--              <v-list-item-header>-->
+    <!--                <v-list-item-title>-->
+    <!--                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25-->
+    <!--                  15:35:00 西安-阿勒泰 航班号：MU2377-->
+    <!--                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}-->
+    <!--                </v-list-item-title>-->
+    <!--                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>-->
+    <!--              </v-list-item-header>-->
+    <!--            </v-list-item>-->
+    <!--            <v-list-item two-line :value="4">-->
+    <!--              <v-list-item-header>-->
+    <!--                <v-list-item-title>-->
+    <!--                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25-->
+    <!--                  15:35:00 西安-阿勒泰 航班号：MU2377-->
+    <!--                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}-->
+    <!--                </v-list-item-title>-->
+    <!--                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>-->
+    <!--              </v-list-item-header>-->
+    <!--            </v-list-item>-->
+    <!--            <v-list-item two-line :value="4">-->
+    <!--              <v-list-item-header>-->
+    <!--                <v-list-item-title>-->
+    <!--                  {"context":{"version":"1.0.0","sign":"d111156a1e72af4ee04c3a60b65e1507","timestamp":1646024441424,"channel":"zhixing","source":"NatlXiangYou","tag":"flight.national.afterservice.electronicInvoiceNotify"},"data":{"orderNo":"XYTX20220224162349","ticketPassengers":[{"name":"成达力艾布塔力甫","cardType":"NI","cardNum":"654324197505160039","tickets":[{"segmentIndex":{"sequenceNum":1},"invoiceInfo":{"ticketType":2,"organizationName":"哈巴河县农业农村局","tfn":"11654324MB1798608A","companyMobile":"","companyAddress":"","bankAccount":"","openAccountBank":"","remark":"行程信息：2022-02-25-->
+    <!--                  15:35:00 西安-阿勒泰 航班号：MU2377-->
+    <!--                  乘机人：成达力艾布塔力甫；","price":103,"invoiceDetails":[{"type":"diffPrice","price":103}]}}]}]}}-->
+    <!--                </v-list-item-title>-->
+    <!--                <v-list-item-subtitle>2022-01-01 15:02:00</v-list-item-subtitle>-->
+    <!--              </v-list-item-header>-->
+    <!--            </v-list-item>-->
+    <!--          </div>-->
+    <!--        </v-list>-->
 
-      </v-card>
-    </v-dialog>
+    <!--      </v-card>-->
+    <!--    </v-dialog>-->
   </div>
 </template>
 
@@ -335,7 +337,8 @@ $history-list-header-height: 48px;
 
 .history-list-item-wrapper {
   overflow-y: scroll !important;
-  height: calc(#{$history-list-height} - #{$history-list-header-height}  - 9px);
+  height: calc(#{$history-list-height} - #{$history-list-header-height} - 9px);
+
   &::-webkit-scrollbar {
     display: none;
   }

@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue'
-import HelloWorld from '@/components/HelloWorld.vue'
+import HistoryPanel from '@/components/HistoryPanel.vue'
+import DetailViewer from '@/components/DetailViewer.vue'
 import { ref } from "vue";
 
+let show = ref(false)
+let detail = ref("window.utools && utools.onPluginEnter(({code, type, payload}) => {\n" +
+    "  if (payload) {\n" +
+    "    let value = payload.toLowerCase();\n" +
+    "    if (value !== 'json') {\n" +
+    "      content.value = payload;\n" +
+    "    }\n" +
+    "  }\n" +
+    "})\n")
 const content = ref("");
 // @ts-ignore
 window.utools && utools.onPluginEnter(({code, type, payload}) => {
@@ -18,8 +28,10 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
 <template>
   <v-app class="app">
     <v-main>
+      <!--      <button @click="show=true"> 打开</button>-->
+      <!--      <history-panel v-model:show="show"></history-panel>-->
       <json-viewer v-model:value="content"></json-viewer>
-<!--      <hello-world v-model:value="content"></hello-world>-->
+      <!--      <detail-viewer :detail="detail" v-model:show="show"></detail-viewer>-->
     </v-main>
   </v-app>
 </template>
