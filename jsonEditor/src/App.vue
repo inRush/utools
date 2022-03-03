@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue'
-import HistoryPanel from '@/components/HistoryPanel.vue'
-import DetailViewer from '@/components/DetailViewer.vue'
 import { ref } from "vue";
 
 let show = ref(false)
@@ -44,5 +42,9 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
   padding: 0 !important;
   overflow: hidden !important;
   background-color: #202124;
+}
+
+.v-text-field input {
+  color: #fff !important;
 }
 </style>
