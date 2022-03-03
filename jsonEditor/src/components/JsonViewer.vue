@@ -28,10 +28,6 @@ let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
 // refs
 const container: Ref<HTMLElement | null> = ref(null);
-// emits
-const emit = defineEmits<{
-  (e: 'input', value: string | undefined): void
-}>()
 // watch
 watch(() => props.value, () => {
   editor?.setValue(Json.beautify(props.value) || props.value);
