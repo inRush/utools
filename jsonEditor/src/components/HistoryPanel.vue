@@ -5,7 +5,7 @@
       <v-row class="search-wrapper" align="center">
         <v-col cols="12" sm="2" class="search-label text-center">历史记录</v-col>
         <v-col cols="12" sm="9" class="search-input-wrapper ">
-          <input type="text" placeholder="搜索" class="search-input">
+          <input type="text" placeholder="搜索" class="search-input" v-model="searchInput">
         </v-col>
         <v-col class="text-center">
           <v-icon icon="mdi-close" @click="$emit('update:show',false)"></v-icon>
@@ -13,14 +13,12 @@
       </v-row>
       <v-list class="history-list">
         <v-divider></v-divider>
-        <template v-for="(item,index) in items" :key="index">
-          <v-list-item :value="index">
+        <template v-for="(item,index) in histories" :key="index">
+          <v-list-item :value="index" @click="onItemClick(item)">
             <v-row align="center">
-              <v-col cols="12" sm="2" class="text-center">{{ item.time }}</v-col>
+              <v-col cols="12" sm="2" class="text-center">{{ $filters.timeStepFormat(item.time) }}</v-col>
               <v-col cols="12" sm="10">
-                <div class="history-list-item-text" v-overflow="historyCfg">
-                  {{ item.text }}
-                </div>
+                <pre class="history-list-item-text" v-overflow="historyCfg">{{ item.text }}</pre>
               </v-col>
             </v-row>
           </v-list-item>
@@ -33,38 +31,32 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { computed, reactive, ref, toRefs, watch } from "vue";
 import MaskViewer from '@/components/MaskViewer.vue'
 import DetailViewer from './DetailViewer.vue'
+import { History } from '@/model'
+import Filter from "@/filter";
 
 let props = withDefaults(defineProps<{
-  show: boolean
+  show: boolean,
+  items: History[]
 }>(), {show: false})
 // data
 let detailShow = ref(false), detailText = ref('');
-let items = reactive([
-  {
-    'time': '刚刚',
-    'text': '<script setup lang="ts">' +
-        '<v-list-item value="1" >\n' +
-        '    <v-row align="center">\n' +
-        '      <v-col cols="12" sm="2" class="text-center">12分钟前</v-col>\n' +
-        '      <v-col cols="12" sm="9" >{{text}}</v-col>\n' +
-        '      <v-col cols="12" sm="1" class="text-center">1</v-col>\n' +
-        '    </v-row>\n' +
-        '  </v-list-item><v-list-item value="1">\n' +
-        '    <v-row align="center">\n' +
-        '      <v-col cols="12" sm="2" class="text-center">12分钟前</v-col>\n' +
-        '      <v-col cols="12" sm="9" >{{text}}</v-col>\n' +
-        '      <v-col cols="12" sm="1" class="text-center">1</v-col>\n' +
-        '    </v-row>\n' +
-        '  </v-list-item>'
-  },
-  {
-    'time': '1分钟前',
-    'text': '123'
+let searchInput = ref('');
+let histories = computed(()=>{
+  if (!searchInput.value || searchInput.value === '') {
+    return props.items;
   }
-])
+  let filterItems = [];
+  for (let history of props.items) {
+    if (history.text.indexOf(searchInput.value) >= 0) {
+      filterItems.push(history);
+    }
+  }
+  return filterItems;
+});
+
 let historyCfg = {
   text: '查看详情',
   maxLine: 3,
@@ -76,20 +68,27 @@ let historyCfg = {
 // emit
 const emit = defineEmits<{
   (e: 'update:show', value: boolean): void
+  (e: 'itemClick', value: History): void
 }>();
 
-function onMaskClick() {
+
+
+function onItemClick(item: History) {
+  emit('itemClick', item);
   emit('update:show', false);
 }
 
 </script>
 
 <style lang="scss" scoped>
+$panelHeight: 70vh;
+$searchWrapperHeight: '84px';
 
 
 .history-panel {
   background-color: #212121;
-  height: 70vh;
+  height: $panelHeight;
+  width: 100%;
   position: absolute;
   bottom: 0;
 
@@ -98,19 +97,20 @@ function onMaskClick() {
   }
 
   &.v-enter-from, &.v-leave-to {
-    bottom: -70vh !important;
+    bottom: -$panelHeight !important;
   }
 
-  //line-height: 200px;
 }
 
 .history-list {
   padding: 0;
+  overflow-y: scroll;
+  height: calc(#{$panelHeight} - #{$searchWrapperHeight});
 }
 
 .history-list-item-text {
   overflow: hidden;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .history-list::-webkit-scrollbar {
@@ -119,6 +119,7 @@ function onMaskClick() {
 
 .search-wrapper {
   padding: 10px;
+  height: $searchWrapperHeight;
 
   .search-label {
     font-size: 16px;

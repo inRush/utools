@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { nextTick, onDeactivated, onMounted, reactive, Ref, ref, watch } from "vue";
+import { computed, nextTick, onDeactivated, onMounted, reactive, Ref, ref, watch } from "vue";
 import * as Json from '../tools/json';
 import * as monaco from 'monaco-editor';
+import Base64 from "@/tools/base64";
 import HistoryPanel from './HistoryPanel.vue'
-
+import Storage from '@/tools/storage'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import { History } from "@/model";
 
 (self as any).MonacoEnvironment = {
   getWorker(workerId: Number, label: string) {
@@ -26,92 +28,92 @@ const props = withDefaults(defineProps<Props>(), {});
 let editor: monaco.editor.IStandaloneCodeEditor;
 let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
+let histories: History[] = reactive([]);
+Storage.ready(() => {
+  histories.push.apply(histories, Storage.get().getItem("histories"))
+})
+let canFormat = false;
 // refs
 const container: Ref<HTMLElement | null> = ref(null);
+
 // watch
-watch(() => props.value, () => {
-  editor?.setValue(Json.beautify(props.value) || props.value);
+watch(() => props.value, (newValue) => {
+  if (newValue === editor.getValue()) {
+    return;
+  }
+  editor?.executeEdits('', [{
+    // @ts-ignore
+    range: editor?.getModel()?.getFullModelRange(),
+    text: newValue
+  }]);
+  canFormat && nextTick(() => {
+    format()
+  });
+  canFormat = true;
 })
+watch(histories, (newValue) => {
+  Storage.get().setItem('histories', newValue);
+})
+// emit
+const emit = defineEmits<{
+  (e: 'update:value', value: string | undefined): void
+}>();
 
 // method
 function format() {
   editor?.getAction("editor.action.formatDocument").run();
 }
 
+function updateValue(value: string | undefined) {
+  emit('update:value', value);
+}
+
+/**
+ * 转义
+ */
 function escape() {
-  compress()
-  let escapeCode = Json.escape(editor?.getValue());
-  escapeCode && editor?.setValue(escapeCode)
+  updateValue(Json.escape(Json.compress(editor?.getValue())))
+  canFormat = false;
 }
 
+/**
+ * 去转义
+ */
 function clearEscape() {
-  let clearEscapeCode = Json.clearEscape(editor?.getValue());
-  clearEscapeCode && editor?.setValue(Json.beautify(clearEscapeCode) || clearEscapeCode);
+  updateValue(Json.clearEscape(editor?.getValue()))
 }
 
+/**
+ * 压缩
+ */
 function compress() {
-  let compressCode = Json.compress(editor?.getValue());
-  compressCode && editor?.setValue(compressCode)
+  updateValue(Json.compress(editor?.getValue()))
+  canFormat = false;
 }
 
+/**
+ * 转换base64
+ */
 function convertBase64() {
   let jsonValue = editor?.getValue();
   if (!jsonValue) {
     return;
   }
   try {
-    let json = JSON.parse(jsonValue);
-    loopConvertBase64(json);
-    editor?.executeEdits('', [{
-      // @ts-ignore
-      range: editor?.getModel()?.getFullModelRange(),
-      text: JSON.stringify(json, null, 4)
-    }])
-
+    const json = JSON.parse(jsonValue);
+    Base64.convertBase64Obj(json);
+    updateValue(JSON.stringify(json, null, 4))
   } catch (e) {
-  }
-}
-
-function isBase64(str: string) {
-  if (str === '' || str.trim() === '') {
-    return false;
-  }
-  try {
-    return btoa(atob(str)) == str;
-  } catch (err) {
-    return false;
-  }
-}
-
-function b64_to_utf8(str: string) {
-  return decodeURIComponent(window.escape(window.atob(str)));
-}
-
-function loopConvertBase64(json: any) {
-  if (typeof json === 'string') {
-    return;
-  }
-  for (let key in json) {
-    if (!json.hasOwnProperty(key)) {
-      continue;
-    }
-    if (typeof json[key] === 'object') {
-      if (json[key].length) {
-
-      } else {
-        loopConvertBase64(json[key]);
-      }
-    } else if (typeof json[key] === 'string' && isBase64(json[key])) {
-      try {
-        let decodeStr = b64_to_utf8(json[key]);
-        json[key] = JSON.parse(decodeStr);
-        loopConvertBase64(json[key]);
-      } catch (e) {
-      }
+    if (Base64.isBase64(jsonValue)) {
+      updateValue(Base64.convertBase64Str(jsonValue))
     }
   }
 }
 
+/**
+ * 多光标
+ * @param points
+ */
 function multipleCursors(points: { start: number, end: number }) {
   if (points) {
     openMultipleCursorDialog.value = false;
@@ -157,6 +159,11 @@ function multipleCursors(points: { start: number, end: number }) {
   }
 }
 
+
+function onHistorySelect(history: History) {
+  updateValue(history.text)
+}
+
 monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
   validate: true,
   allowComments: true
@@ -177,8 +184,19 @@ onMounted(() => {
       minimap: {enabled: false},
       theme: 'vs-dark',
     });
-    editor.onDidPaste(() => {
-      format()
+    editor.onDidPaste((e) => {
+      let value = editor.getValue();
+      if (histories.length && histories[0].text === value) {
+        return;
+      }
+      histories.unshift({
+        time: new Date().getTime(),
+        text: value
+      });
+      updateValue(value);
+    });
+    editor.onDidChangeModelContent((e) => {
+      updateValue(editor.getValue());
     })
   }
 })
@@ -204,7 +222,7 @@ onDeactivated(() => {
       <v-btn class="mx-2" icon="mdi-history" color="cyan" size="x-small" @click="openHistoryPanel=true">
       </v-btn>
     </div>
-    <history-panel v-model:show="openHistoryPanel"/>
+    <history-panel v-model:show="openHistoryPanel" :items="histories" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>
       <v-card>
         <v-card-text>

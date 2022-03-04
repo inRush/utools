@@ -87,6 +87,12 @@ declare interface UTools {
     allDocs: (prevKey: string[]) => DbGetDoc[];
   };
 
+  dbStorage: {
+    setItem(key: string, value: any): void
+    getItem(key: string): any
+    removeItem(key: string): void
+  }
+
   // event
   /**
    *

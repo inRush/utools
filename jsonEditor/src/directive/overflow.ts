@@ -29,6 +29,7 @@ export default {
       return;
     }
     const lineHeight = binding.value.lineHeight || getLineHeight(el);
+    el.style.lineHeight = lineHeight + 'px';
     el.style.maxHeight = (lineHeight * binding.value.maxLine) + 'px';
     let parentNode = getParentNode(el);
     // 防止本身不可见
@@ -37,7 +38,7 @@ export default {
     // 获取当前元素的style
     const curStyle = window.getComputedStyle(el, '');
     // 创建一个容器来记录文字的width
-    const textDiv = document.createElement('div');
+    const textDiv = document.createElement(el.tagName);
     // 设置新容器的字体样式，确保与当前需要隐藏的样式相同
     textDiv.style.fontSize = curStyle.fontSize;
     textDiv.style.fontWeight = curStyle.fontWeight;
@@ -48,9 +49,8 @@ export default {
     textDiv.innerHTML = el.innerHTML;
     // 将容器插入body，如果不插入，offsetWidth为0
     document.body.appendChild(textDiv);
-
-    console.log(textDiv.offsetHeight,el.offsetHeight)
-    if (textDiv.offsetHeight > el.offsetHeight) {
+    // console.log(textDiv.offsetHeight, el.offsetHeight)
+    if (textDiv.offsetHeight > el.offsetHeight + (lineHeight / 2)) {
       el.style.overflow = 'hidden';
       const wrapperDiv = document.createElement('div');
       wrapperDiv.className = "__overflow_wrapper__";
@@ -60,14 +60,15 @@ export default {
       const detailLink = document.createElement("a");
       detailLink.style.color = "#54adcf"
       detailLink.innerHTML = binding.value.text || '查看全部';
-      detailLink.href='#'
+      detailLink.href = '#'
       detailDiv.appendChild(detailLink);
-      detailDiv.addEventListener('click', (e) => {
-        e.preventDefault();
+      detailLink.addEventListener('click', (e) => {
+        e.stopPropagation()
         binding.value.onClick && binding.value.onClick(el);
+        return true;
       })
       wrapperDiv.appendChild(detailDiv);
-    }else{
+    } else {
       document.body.removeChild(el);
       parentNode.appendChild(el);
     }

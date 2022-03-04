@@ -47,4 +47,8 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
 .v-text-field input {
   color: #fff !important;
 }
+
+pre {
+  font-family: "Roboto", sans-serif !important;
+}
 </style>

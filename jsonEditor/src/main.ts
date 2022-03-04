@@ -5,9 +5,13 @@ import vuetify from './plugins/vuetify'
 // @ts-ignore
 import { loadFonts } from './plugins/webfontloader'
 import overflow from "@/directive/overflow";
+import filters from '@/filter'
+
 loadFonts()
 
-createApp(App)
-    .use(vuetify)
-    .directive('overflow',overflow)
+const app = createApp(App)
+app.config.globalProperties.$filters = filters
+app.config.globalProperties.$utools = (window as any).utools
+app.use(vuetify)
+    .directive('overflow', overflow)
     .mount('#app')

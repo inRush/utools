@@ -11,7 +11,7 @@ const props = defineProps<{
 <template>
   <mask-viewer :show="props.show" @click="$emit('update:show',false)"/>
   <transition>
-    <div class="detail-viewer" v-show="props.show">{{ props.detail }}</div>
+    <pre contenteditable="true" class="detail-viewer" v-show="props.show">{{ props.detail }}</pre>
   </transition>
 </template>
 
@@ -24,10 +24,10 @@ const props = defineProps<{
   top: 0;
   right: 0;
   bottom: 0;
-
   background-color: #2b2c2d;
-  padding: 20px;
+  padding: 10px;
   elevation: above;
+  overflow: scroll;
 
   &.v-enter-active, &.v-leave-active {
     transition: right .3s;
@@ -36,5 +36,14 @@ const props = defineProps<{
   &.v-enter-from, &.v-leave-to {
     right: -50vw !important;
   }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:focus{
+    outline: none;
+  }
+
 }
 </style>
