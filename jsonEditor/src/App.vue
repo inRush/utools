@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue'
 import { ref } from "vue";
+import Db from "@/tools/db";
 
 let show = ref(false)
 let detail = ref("window.utools && utools.onPluginEnter(({code, type, payload}) => {\n" +
@@ -16,8 +17,9 @@ const content = ref("");
 window.utools && utools.onPluginEnter(({code, type, payload}) => {
   if (payload) {
     let value = payload.toLowerCase();
-    if (value !== 'json') {
+    if (value && value !== 'json' && value !== '') {
       content.value = payload;
+      Db.get().addHistory(payload);
     }
   }
 })

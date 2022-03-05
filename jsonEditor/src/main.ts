@@ -6,12 +6,16 @@ import vuetify from './plugins/vuetify'
 import { loadFonts } from './plugins/webfontloader'
 import overflow from "@/directive/overflow";
 import filters from '@/filter'
+import Storage from '@/tools/db'
 
-loadFonts()
+(async () => {
+  loadFonts()
+  await Storage.ready();
+  const app = createApp(App)
+  app.config.globalProperties.$filters = filters
+  app.config.globalProperties.$utools = (window as any).utools
+  app.use(vuetify)
+      .directive('overflow', overflow)
+      .mount('#app')
+})()
 
-const app = createApp(App)
-app.config.globalProperties.$filters = filters
-app.config.globalProperties.$utools = (window as any).utools
-app.use(vuetify)
-    .directive('overflow', overflow)
-    .mount('#app')

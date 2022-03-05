@@ -14,7 +14,7 @@ export default {
     }
     let hourFormat = Math.floor(dis / 3600000);
     if (hourFormat < 24) {
-      return minuteFormat + '天前';
+      return hourFormat + '小时前';
     }
     let dayFormat = Math.floor(dis / (3600000 * 24));
     if (dayFormat == 0) {

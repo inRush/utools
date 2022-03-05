@@ -31,25 +31,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch } from "vue";
+import { computed, ref } from "vue";
 import MaskViewer from '@/components/MaskViewer.vue'
 import DetailViewer from './DetailViewer.vue'
 import { History } from '@/model'
-import Filter from "@/filter";
+import Db from '@/tools/db'
 
 let props = withDefaults(defineProps<{
-  show: boolean,
-  items: History[]
+  show: boolean
 }>(), {show: false})
 // data
 let detailShow = ref(false), detailText = ref('');
 let searchInput = ref('');
+Db.get().clearTimeoutHistory()
 let histories = computed(()=>{
   if (!searchInput.value || searchInput.value === '') {
-    return props.items;
+    return Db.get().histories.value;
   }
   let filterItems = [];
-  for (let history of props.items) {
+  for (let history of Db.get().histories.value) {
     if (history.text.indexOf(searchInput.value) >= 0) {
       filterItems.push(history);
     }

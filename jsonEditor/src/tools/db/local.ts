@@ -1,4 +1,4 @@
-import { IStorage } from "@/tools/storage/index";
+import { IStorage } from "@/tools/db/index";
 
 const typeCode = "<<$$$$>>";
 

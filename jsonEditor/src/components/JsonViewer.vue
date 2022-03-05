@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, onDeactivated, onMounted, reactive, Ref, ref, watch } from "vue";
+import { nextTick, onDeactivated, onMounted, reactive, Ref, ref, watch } from "vue";
 import * as Json from '../tools/json';
 import * as monaco from 'monaco-editor';
 import Base64 from "@/tools/base64";
 import HistoryPanel from './HistoryPanel.vue'
-import Storage from '@/tools/storage'
+import Db from '@/tools/db'
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import { History } from "@/model";
@@ -28,11 +28,7 @@ const props = withDefaults(defineProps<Props>(), {});
 let editor: monaco.editor.IStandaloneCodeEditor;
 let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
-let histories: History[] = reactive([]);
-Storage.ready(() => {
-  histories.push.apply(histories, Storage.get().getItem("histories"))
-})
-let canFormat = false;
+let canFormat = true;
 // refs
 const container: Ref<HTMLElement | null> = ref(null);
 
@@ -44,28 +40,23 @@ watch(() => props.value, (newValue) => {
   editor?.executeEdits('', [{
     // @ts-ignore
     range: editor?.getModel()?.getFullModelRange(),
-    text: newValue
+    text: canFormat ? Json.beautify(newValue) || newValue : newValue
   }]);
-  canFormat && nextTick(() => {
-    format()
-  });
   canFormat = true;
 })
-watch(histories, (newValue) => {
-  Storage.get().setItem('histories', newValue);
-})
+
 // emit
 const emit = defineEmits<{
   (e: 'update:value', value: string | undefined): void
 }>();
 
 // method
-function format() {
-  editor?.getAction("editor.action.formatDocument").run();
-}
-
 function updateValue(value: string | undefined) {
   emit('update:value', value);
+}
+
+function format() {
+  editor?.getAction("editor.action.formatDocument").run();
 }
 
 /**
@@ -186,13 +177,7 @@ onMounted(() => {
     });
     editor.onDidPaste((e) => {
       let value = editor.getValue();
-      if (histories.length && histories[0].text === value) {
-        return;
-      }
-      histories.unshift({
-        time: new Date().getTime(),
-        text: value
-      });
+      Db.get().addHistory(value);
       updateValue(value);
     });
     editor.onDidChangeModelContent((e) => {
@@ -200,6 +185,7 @@ onMounted(() => {
     })
   }
 })
+
 onDeactivated(() => {
   editor?.dispose();
 })
@@ -211,18 +197,14 @@ onDeactivated(() => {
       <div ref="container" class="code-editor"></div>
     </div>
     <div class="tools-list">
-      <v-btn color="blue" variant="text" @click="format">格式化</v-btn>
-      <v-btn color="blue" variant="text" @click="compress">压缩</v-btn>
-      <v-btn color="blue" variant="text" @click="escape">转义</v-btn>
-      <v-btn color="blue" variant="text" @click="clearEscape">去转义</v-btn>
-      <v-btn color="blue" variant="text" @click="convertBase64">去base64</v-btn>
-      <v-btn color="blue" variant="text" @click="multipleCursors(null)">多光标</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="openHistoryPanel=true">历史</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="compress">压缩</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="escape">转义</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="convertBase64">去base64</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
     </div>
-    <div class="tools-point">
-      <v-btn class="mx-2" icon="mdi-history" color="cyan" size="x-small" @click="openHistoryPanel=true">
-      </v-btn>
-    </div>
-    <history-panel v-model:show="openHistoryPanel" :items="histories" @itemClick="onHistorySelect"/>
+    <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>
       <v-card>
         <v-card-text>
@@ -256,7 +238,7 @@ onDeactivated(() => {
 </template>
 
 <style lang="scss" scoped>
-$tools-list-height: 36px;
+$tools-list-height: 28px;
 $tools-point-bottom: 10px;
 $tools-point-right: 10px;
 $history-list-height: 300px;
