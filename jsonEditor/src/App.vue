@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import JsonViewer from '@/components/JsonViewer.vue'
+import JsonViewer from '@/components/JsonViewer.vue';
+// import MonacoEditor from '@/components/MonacoEditor.vue'
 import { ref } from "vue";
 import Db from "@/tools/db";
 
@@ -32,6 +33,8 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
       <!--      <history-panel v-model:show="show"></history-panel>-->
       <json-viewer v-model:value="content"></json-viewer>
       <!--      <detail-viewer :detail="detail" v-model:show="show"></detail-viewer>-->
+      <!--      <json-path-viewer :json="content"/>-->
+      <!--      <monaco-editor :value="detail" name="test" language="javascript"/>-->
     </v-main>
   </v-app>
 </template>

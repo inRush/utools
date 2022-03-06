@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mdi/font": "5.9.55",
+    "jsonpath": "^1.1.1",
     "monaco-editor": "^0.32.1",
     "prettier": "^2.5.1",
     "roboto-fontface": "*",
@@ -18,6 +19,7 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
+    "@types/jsonpath": "^0.2.0",
     "@types/node": "^17.0.21",
     "@types/prettier": "^2.4.4",
     "@vitejs/plugin-vue": "^2.2.0",

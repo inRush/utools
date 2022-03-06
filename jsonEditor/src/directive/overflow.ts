@@ -1,4 +1,4 @@
-import { Directive, DirectiveBinding } from "@vue/runtime-core";
+import { DirectiveBinding } from "@vue/runtime-core";
 
 function getParentNode(el: HTMLElement) {
   let pNode;
@@ -60,7 +60,6 @@ export default {
       const detailLink = document.createElement("a");
       detailLink.style.color = "#54adcf"
       detailLink.innerHTML = binding.value.text || '查看全部';
-      detailLink.href = '#'
       detailDiv.appendChild(detailLink);
       detailLink.addEventListener('click', (e) => {
         e.stopPropagation()
