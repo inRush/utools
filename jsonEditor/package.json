@@ -19,6 +19,7 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@types/jsonpath": "^0.2.0",
     "@types/node": "^17.0.21",
     "@types/prettier": "^2.4.4",

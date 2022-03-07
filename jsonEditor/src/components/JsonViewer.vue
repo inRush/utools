@@ -1,36 +1,32 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref } from "vue";
 import * as Json from '../tools/json';
-import * as monaco from 'monaco-editor';
 import Base64 from "@/tools/base64";
+import Db from '@/tools/db';
 import HistoryPanel from './HistoryPanel.vue'
 import MonacoEditor from './MonacoEditor.vue';
 import { History } from "@/model";
+import { EditorType, MonacoType, ISelection, Selection } from "@/components/MonacoEditor.vue";
+import JsonPathViewer from './JsonPathViewer.vue';
 
-interface Props {
+const props = withDefaults(defineProps<{
   value: string
-}
-
-const props = withDefaults(defineProps<Props>(), {});
+}>(), {});
 // data
 let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
-let canFormat = true;
-// refs
-const editorRef = ref<InstanceType<typeof MonacoEditor>>(null);
-// watch
-watch(() => props.value, (newValue) => {
-  if (newValue === getEditor()?.getValue()) {
-    return;
+let monacoEditor: EditorType;
+let openJsonPathViewer = ref(false);
+let jsonPathObj = computed(() => {
+  if (!openJsonPathViewer.value) {
+    return {};
   }
-  getEditor()?.executeEdits('', [{
-    // @ts-ignore
-    range: getEditor()?.getModel()?.getFullModelRange(),
-    text: canFormat ? Json.beautify(newValue) || newValue : newValue
-  }]);
-  canFormat = true;
+  try {
+    return JSON.parse(props.value);
+  } catch (e) {
+    return 'json格式错误';
+  }
 })
-
 // emit
 const emit = defineEmits<{
   (e: 'update:value', value: string | undefined): void
@@ -38,7 +34,7 @@ const emit = defineEmits<{
 
 // method
 function getEditor() {
-  return editorRef?.value.getEditor()
+  return monacoEditor;
 }
 
 function updateValue(value: string | undefined) {
@@ -54,14 +50,13 @@ function format() {
  */
 function escape() {
   updateValue(Json.escape(Json.compress(getEditor()?.getValue())))
-  canFormat = false;
 }
 
 /**
  * 去转义
  */
 function clearEscape() {
-  updateValue(Json.clearEscape(getEditor()?.getValue()))
+  updateValue(Json.beautify(Json.clearEscape(getEditor()?.getValue())));
 }
 
 /**
@@ -69,7 +64,6 @@ function clearEscape() {
  */
 function compress() {
   updateValue(Json.compress(getEditor()?.getValue()))
-  canFormat = false;
 }
 
 /**
@@ -112,11 +106,11 @@ function multipleCursors(points: { start: number, end: number }) {
     if (points.start > points.end) {
       points.start = points.end;
     }
-    let selections: monaco.ISelection[] = [];
+    let selections: ISelection[] = [];
     for (let i = points.start; i <= points.end; i++) {
       let lineContent = editor?.getModel()?.getLineContent(i) || "";
       const endOfLineColNumber = lineContent.length + 1;
-      selections.push(new monaco.Selection(i, endOfLineColNumber, i, endOfLineColNumber));
+      selections.push(new Selection(i, endOfLineColNumber, i, endOfLineColNumber));
     }
     editor?.setSelections(selections)
     nextTick(() => {
@@ -146,30 +140,30 @@ function onHistorySelect(history: History) {
   updateValue(history.text)
 }
 
-monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-  validate: true,
-  allowComments: true
-});
-
-// life cycle
-onMounted(() => {
-  getEditor()?.onDidPaste(() => {
+function onEditorMounted(editor: EditorType, monaco: MonacoType) {
+  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+    validate: true,
+    allowComments: true
+  });
+  editor.onDidPaste(() => {
     let value = getEditor()?.getValue();
     Db.get().addHistory(value);
     updateValue(value);
   });
-})
+  monacoEditor = editor;
+}
+
 </script>
 
 <template>
   <div style="height: 100vh" class="d-flex flex-column ">
     <div class="editor-panel">
-      <div class="json-editor-wrapper">
-        <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"/>
+      <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer}">
+        <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"
+                       :editor-mounted="onEditorMounted" language="json"/>
       </div>
-      <div class="json-path-editor-wrapper">
-        <input type="text" class="json-path-input">
-        <div class="json-path-editor" contenteditable="true"></div>
+      <div class="json-path-viewer-wrapper" v-show="openJsonPathViewer">
+        <json-path-viewer :json="jsonPathObj"/>
       </div>
     </div>
 
@@ -180,38 +174,38 @@ onMounted(() => {
       <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="convertBase64">去base64</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
-      <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">JSON-PATH</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="openJsonPathViewer = !openJsonPathViewer">JSON-PATH</v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
-    <!--    <v-dialog v-model="openMultipleCursorDialog" persistent>-->
-    <!--      <v-card>-->
-    <!--        <v-card-text>-->
-    <!--          <v-container>-->
-    <!--            <v-row>-->
-    <!--              <v-col cols="12">-->
-    <!--                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"-->
-    <!--                              label="起始行" required type="number"-->
-    <!--                              hide-details></v-text-field>-->
-    <!--              </v-col>-->
-    <!--              <v-col cols="12">-->
-    <!--                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required-->
-    <!--                              type="number"-->
-    <!--                              hide-details></v-text-field>-->
-    <!--              </v-col>-->
-    <!--            </v-row>-->
-    <!--          </v-container>-->
-    <!--        </v-card-text>-->
-    <!--        <v-card-actions>-->
-    <!--          <v-spacer></v-spacer>-->
-    <!--          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">-->
-    <!--            关闭-->
-    <!--          </v-btn>-->
-    <!--          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">-->
-    <!--            确认-->
-    <!--          </v-btn>-->
-    <!--        </v-card-actions>-->
-    <!--      </v-card>-->
-    <!--    </v-dialog>-->
+    <v-dialog v-model="openMultipleCursorDialog" persistent>
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"
+                              label="起始行" required type="number"
+                              hide-details></v-text-field>
+              </v-col>
+              <v-col cols="12">
+                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required
+                              type="number"
+                              hide-details></v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">
+            关闭
+          </v-btn>
+          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">
+            确认
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -229,39 +223,17 @@ $history-list-header-height: 48px;
   padding-bottom: $tools-list-height;
 
   .json-editor-wrapper {
-    width: 50%;
+    height: 100%;
+    flex: 1;
 
-    .code-editor {
-      height: 100%;
-      width: 100%;
+    &.half-width {
+      width: 50%;
     }
   }
 
-  .json-path-editor-wrapper {
+  .json-path-viewer-wrapper {
     height: 100%;
     width: 50%;
-    display: flex;
-    flex-direction: column;
-
-    .json-path-input {
-      width: 100%;
-      height: 50px;
-      background-color: #505050;
-
-      &:focus {
-        outline: none;
-        color: #fff;
-      }
-    }
-
-    .json-path-editor {
-      flex: 1;
-      width: 100%;
-
-      &:focus {
-        outline: none;
-      }
-    }
   }
 }
 

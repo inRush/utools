@@ -1,18 +1,48 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue';
-// import MonacoEditor from '@/components/MonacoEditor.vue'
+import MonacoEditor from '@/components/MonacoEditor.vue'
+import JsonPathViewer from '@/components/JsonPathViewer.vue';
 import { ref } from "vue";
 import Db from "@/tools/db";
 
+const jsonObj = {
+  "main": "index.html",
+  "logo": "logo.png",
+  "platform": [
+    "win32",
+    "darwin",
+    "linux"
+  ],
+  "development": {
+    "main": "http://localhost:3000"
+  },
+  "pluginSetting": {
+    "single": false,
+    "height": 0
+  },
+  "features": [
+    {
+      "code": "Json编辑器",
+      "explain": "json编辑器",
+      "platform": [
+        "win32",
+        "darwin",
+        "linux"
+      ],
+      "cmds": [
+        "Json",
+        {
+          "type": "regex",
+          "label": "JSON",
+          "match": "/^(?={)[\\s\\S]*(?<=})[\\r]*[\\n]*|^(?=\\[)[\\s\\S]*(?<=\\])[\\r]*[\\n]*/i",
+          "minLength": 2
+        }
+      ]
+    }
+  ]
+}
 let show = ref(false)
-let detail = ref("window.utools && utools.onPluginEnter(({code, type, payload}) => {\n" +
-    "  if (payload) {\n" +
-    "    let value = payload.toLowerCase();\n" +
-    "    if (value !== 'json') {\n" +
-    "      content.value = payload;\n" +
-    "    }\n" +
-    "  }\n" +
-    "})\n")
+let detail = ref(JSON.stringify(jsonObj))
 const content = ref("");
 // @ts-ignore
 window.utools && utools.onPluginEnter(({code, type, payload}) => {
@@ -24,6 +54,8 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
     }
   }
 })
+
+
 </script>
 
 <template>
@@ -33,8 +65,8 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
       <!--      <history-panel v-model:show="show"></history-panel>-->
       <json-viewer v-model:value="content"></json-viewer>
       <!--      <detail-viewer :detail="detail" v-model:show="show"></detail-viewer>-->
-      <!--      <json-path-viewer :json="content"/>-->
-      <!--      <monaco-editor :value="detail" name="test" language="javascript"/>-->
+      <!--      <json-path-viewer :json="jsonObj"/>-->
+      <!--      <monaco-editor :value="detail" language="json"/>-->
     </v-main>
   </v-app>
 </template>

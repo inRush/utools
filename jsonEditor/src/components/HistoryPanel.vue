@@ -13,7 +13,7 @@
       </v-row>
       <v-list class="history-list">
         <v-divider></v-divider>
-        <template v-for="(item,index) in histories" :key="index">
+        <template v-for="(item,index) in histories" :key="item">
           <v-list-item :value="index" @click="onItemClick(item)">
             <v-row align="center">
               <v-col cols="12" sm="2" class="text-center">{{ $filters.timeStepFormat(item.time) }}</v-col>

@@ -3,10 +3,11 @@ import vue from '@vitejs/plugin-vue'
 import * as path from 'path';
 // @ts-ignore
 import vuetify from "@vuetify/vite-plugin";
-
+import { viteCommonjs, esbuildCommonjs } from '@originjs/vite-plugin-commonjs';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    // viteCommonjs(),npm
     vue(),
     vuetify({
       autoImport: true,
@@ -27,5 +28,12 @@ export default defineConfig({
         // additionalData: `@import "./src/style/mixin.scss";`,
       }
     }
+  },
+  optimizeDeps:{
+    // esbuildOptions:{
+    //   plugins:[
+    //       esbuildCommonjs(["monaco-vscode-textmate-theme-converter"])
+    //   ]
+    // }
   }
 })
