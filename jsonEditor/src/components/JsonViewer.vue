@@ -6,8 +6,10 @@ import Db from '@/tools/db';
 import HistoryPanel from './HistoryPanel.vue'
 import MonacoEditor from './MonacoEditor.vue';
 import { History } from "@/model";
-import { EditorType, MonacoType, ISelection, Selection } from "@/components/MonacoEditor.vue";
+import { EditorType, ISelection, MonacoType, Selection } from "@/components/MonacoEditor.vue";
 import JsonPathViewer from './JsonPathViewer.vue';
+import { convertXML } from 'simple-xml-to-json'
+import xmlToJsonConvertor from "@/tools/xml/xmlToJsonConvertor";
 
 const props = withDefaults(defineProps<{
   value: string
@@ -147,6 +149,10 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
   });
   editor.onDidPaste(() => {
     let value = getEditor()?.getValue();
+    try {
+      value = JSON.stringify(convertXML(value, xmlToJsonConvertor), null, 4);
+    } catch (e) {
+    }
     Db.get().addHistory(value);
     updateValue(value);
   });
@@ -174,7 +180,8 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
       <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="convertBase64">去base64</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
-      <v-btn color="blue" size="small" variant="text" @click="openJsonPathViewer = !openJsonPathViewer">JSON-PATH</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="openJsonPathViewer = !openJsonPathViewer">JSON-PATH
+      </v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>

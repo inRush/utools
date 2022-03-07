@@ -14,6 +14,7 @@
     "monaco-editor": "^0.32.1",
     "prettier": "^2.5.1",
     "roboto-fontface": "*",
+    "simple-xml-to-json": "^1.0.8",
     "vue": "^3.2.25",
     "vuetify": "^3.0.0-alpha.0",
     "webfontloader": "^1.0.0"

@@ -7,8 +7,9 @@ import { loadFonts } from './plugins/webfontloader'
 import overflow from "@/directive/overflow";
 import filters from '@/filter'
 import Storage from '@/tools/db'
+
 (async () => {
-  loadFonts()
+  await loadFonts()
   await Storage.ready();
   const app = createApp(App)
   app.config.globalProperties.$filters = filters

@@ -24,7 +24,6 @@ export default (key: string, initValue: any) => {
         },
         set(target: any, p: string | symbol, value: any, receiver: any): boolean {
           target[p] = value;
-          console.log("set", p, value)
           storage.setItem(key, target);
           return true;
         }
