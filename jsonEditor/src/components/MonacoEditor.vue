@@ -68,7 +68,7 @@ export default defineComponent({
           scrollBeyondLastLine: false,
           minimap: {enabled: false},
           theme: 'vs-dark',
-          lineDecorationsWidth: 0
+          lineDecorationsWidth: 0,
         }, props.option));
         editor?.onDidChangeModelContent(() => {
           context.emit('update:value', editor?.getValue())

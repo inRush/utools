@@ -8,7 +8,7 @@ import MonacoEditor from './MonacoEditor.vue';
 import { History } from "@/model";
 import { EditorType, ISelection, MonacoType, Selection } from "@/components/MonacoEditor.vue";
 import JsonPathViewer from './JsonPathViewer.vue';
-import { convertXML } from 'simple-xml-to-json'
+import xmlToJson from '@/tools/xml/xmlToJson'
 import xmlToJsonConvertor from "@/tools/xml/xmlToJsonConvertor";
 
 const props = withDefaults(defineProps<{
@@ -144,13 +144,13 @@ function onHistorySelect(history: History) {
 
 function onEditorMounted(editor: EditorType, monaco: MonacoType) {
   monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-    validate: true,
+    validate: false,
     allowComments: true
   });
   editor.onDidPaste(() => {
     let value = getEditor()?.getValue();
     try {
-      value = JSON.stringify(convertXML(value, xmlToJsonConvertor), null, 4);
+      value = JSON.stringify(xmlToJson.convertXML(value, xmlToJsonConvertor), null, 4);
     } catch (e) {
     }
     Db.get().addHistory(value);

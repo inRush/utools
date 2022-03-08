@@ -29,12 +29,19 @@ export default {
       return;
     }
     const lineHeight = binding.value.lineHeight || getLineHeight(el);
+    let parent: HTMLElement | null | undefined = null;
+    if (el.offsetWidth === 0) {
+      parent = el.parentElement;
+      while (!parent || parent.style.display !== 'none') {
+        parent = parent?.parentElement;
+      }
+      if (parent) {
+        parent.style.display = 'block';
+      }
+    }
     el.style.lineHeight = lineHeight + 'px';
     el.style.maxHeight = (lineHeight * binding.value.maxLine) + 'px';
     let parentNode = getParentNode(el);
-    // 防止本身不可见
-    document.body.appendChild(el);
-    /* 第1步：先要创建一个容器`span`去获取文本的宽度 */
     // 获取当前元素的style
     const curStyle = window.getComputedStyle(el, '');
     // 创建一个容器来记录文字的width
@@ -45,11 +52,12 @@ export default {
     textDiv.style.fontFamily = curStyle.fontFamily;
     textDiv.style.width = el.offsetWidth + 'px';
     textDiv.style.lineHeight = lineHeight + 'px';
+    textDiv.style.whiteSpace = curStyle.whiteSpace
+    textDiv.style.wordBreak = curStyle.wordBreak
     // 设置新容器的文字
     textDiv.innerHTML = el.innerHTML;
     // 将容器插入body，如果不插入，offsetWidth为0
     document.body.appendChild(textDiv);
-    // console.log(textDiv.offsetHeight, el.offsetHeight)
     if (textDiv.offsetHeight > el.offsetHeight + (lineHeight / 2)) {
       el.style.overflow = 'hidden';
       const wrapperDiv = document.createElement('div');
@@ -68,9 +76,11 @@ export default {
       })
       wrapperDiv.appendChild(detailDiv);
     } else {
-      document.body.removeChild(el);
       parentNode.appendChild(el);
     }
     document.body.removeChild(textDiv);
+    if (parent) {
+      parent.style.display = 'none';
+    }
   }
 }

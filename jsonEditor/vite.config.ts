@@ -7,7 +7,7 @@ import { viteCommonjs, esbuildCommonjs } from '@originjs/vite-plugin-commonjs';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    // viteCommonjs(),npm
+    viteCommonjs(),
     vue(),
     vuetify({
       autoImport: true,
@@ -30,7 +30,9 @@ export default defineConfig({
     }
   },
   optimizeDeps:{
+    include:['./src/tools/xml/xmlToJson.js']
     // esbuildOptions:{
+    //
     //   plugins:[
     //       esbuildCommonjs(["monaco-vscode-textmate-theme-converter"])
     //   ]

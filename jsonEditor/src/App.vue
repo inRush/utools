@@ -2,7 +2,7 @@
 import JsonViewer from '@/components/JsonViewer.vue';
 import MonacoEditor from '@/components/MonacoEditor.vue'
 import JsonPathViewer from '@/components/JsonPathViewer.vue';
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import Db from "@/tools/db";
 
 const jsonObj = {
@@ -55,11 +55,22 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
   }
 })
 
+function onDrop(e: DragEvent) {
+  const files = e.dataTransfer?.files;
+  if (files) {
+    // @ts-ignore
+    const fileContent = window.getFile(files[0].path)?.toString();
+    if (fileContent) {
+      content.value = fileContent;
+    }
+  }
+}
+
 
 </script>
 
 <template>
-  <v-app class="app">
+  <v-app class="app" @drop.prevent="onDrop" @dragenter.prevent @dragover.prevent>
     <v-main>
       <!--      <button @click="show=true"> 打开</button>-->
       <!--      <history-panel v-model:show="show"></history-panel>-->

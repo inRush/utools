@@ -15,10 +15,10 @@
         <v-divider></v-divider>
         <template v-for="(item,index) in histories" :key="item">
           <v-list-item :value="index" @click="onItemClick(item)">
-            <v-row align="center">
-              <v-col cols="12" sm="2" class="text-center">{{ $filters.timeStepFormat(item.time) }}</v-col>
+            <v-row align="center" style="width: 100vw;overflow: hidden">
+              <v-col cols="12" sm="2" class="text-center" >{{ $filters.timeStepFormat(item.time) }}</v-col>
               <v-col cols="12" sm="10">
-                <pre class="history-list-item-text" v-overflow="historyCfg">{{ item.text }}</pre>
+                <pre class="history-list-item-text" v-overflow="historyCfg" style="flex: 0 1">{{ item.text }}</pre>
               </v-col>
             </v-row>
           </v-list-item>
@@ -110,7 +110,9 @@ $searchWrapperHeight: '84px';
 
 .history-list-item-text {
   overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: break-spaces;
 }
 
 .history-list::-webkit-scrollbar {

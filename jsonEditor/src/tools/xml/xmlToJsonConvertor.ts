@@ -17,8 +17,8 @@ const buildJSONFromNode = (node: any) => {
       }
       if (children) {
         const jsonChildren = buildChildren(node.value.children)
-        if (jsonChildren.content && Object.keys(element).length === 0) {
-          element = jsonChildren.content;
+        if (jsonChildren['#content'] && Object.keys(element).length === 0) {
+          element = jsonChildren['#content'];
         } else {
           element = Object.assign(element, jsonChildren)
         }
@@ -43,11 +43,32 @@ const buildChildren = (children: any) => {
   if (!children || !Array.isArray(children) || children.length === 0) return null
   if (isContentChildren(children)) {
     return {
-      content: children[0].value
+      '#content': children[0].value
     }
   }
   return children.map(buildJSONFromNode)
-      .reduce((agg, j) => Object.assign(agg, j), {})
+      .reduce((agg, j) => {
+        for (let key in j) {
+          if (!j.hasOwnProperty(key)) {
+            continue;
+          }
+          if (agg[key]) {
+            const eleValue = agg[key];
+            if (!eleValue.length) {
+              agg[key] = [];
+              agg[key].push(eleValue);
+            }
+            if (j[key].length) {
+              agg[key].push.apply(agg[key], j[key])
+            } else {
+              agg[key].push(j[key]);
+            }
+          } else {
+            agg[key] = j[key];
+          }
+        }
+        return agg;
+      }, {})
 }
 
 const isContentChildren = (children: any) => children && Array.isArray(children) && children.length === 1 && children[0].type === 'CONTENT'

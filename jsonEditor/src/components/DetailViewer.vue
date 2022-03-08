@@ -27,8 +27,10 @@ const props = defineProps<{
   background-color: #2b2c2d;
   padding: 10px;
   elevation: above;
-  overflow: scroll;
-
+  overflow-y: scroll;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: break-spaces;
   &.v-enter-active, &.v-leave-active {
     transition: right .3s;
   }
