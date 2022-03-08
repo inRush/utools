@@ -3,18 +3,22 @@ import vue from '@vitejs/plugin-vue'
 import * as path from 'path';
 // @ts-ignore
 import vuetify from "@vuetify/vite-plugin";
-import { viteCommonjs, esbuildCommonjs } from '@originjs/vite-plugin-commonjs';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    viteCommonjs(),
     vue(),
+    // viteCommonjs(),
     vuetify({
       autoImport: true,
     })
   ],
+  server: {
+    fs: {
+      strict: false
+    }
+  },
   base: './',
-  define: { 'process.env': {} },
+  define: {'process.env': {}},
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -29,13 +33,11 @@ export default defineConfig({
       }
     }
   },
-  optimizeDeps:{
-    include:['./src/tools/xml/xmlToJson.js']
-    // esbuildOptions:{
-    //
-    //   plugins:[
-    //       esbuildCommonjs(["monaco-vscode-textmate-theme-converter"])
-    //   ]
-    // }
+  optimizeDeps: {
+    esbuildOptions: {
+      // plugins:[
+      //     esbuildCommonjs(["quicktype-core"])
+      // ]
+    }
   }
 })

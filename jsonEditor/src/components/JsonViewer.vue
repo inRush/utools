@@ -159,6 +159,16 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
   monacoEditor = editor;
 }
 
+
+async function convert() {
+  const {lines: JavaCodes} = await _convertJson(
+      "Java",
+      "Test",
+      getEditor()?.getValue()
+  );
+  console.log(JavaCodes.join("\n"));
+}
+
 </script>
 
 <template>
@@ -182,6 +192,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
       <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="openJsonPathViewer = !openJsonPathViewer">JSON-PATH
       </v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="convert">转换</v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>

@@ -1,18 +1,18 @@
 'use strict';
 
-const {createLexer} = require('./lexer')
-const {Token, TOKEN_TYPE} = require('./model')
+import {createLexer} from './lexer'
+import {Token, TOKEN_TYPE} from './model'
 // AST Node types
 const [ROOT, ELEMENT, ATTRIBUTE, CONTENT] = ["ROOT", "ELEMENT", "ATTRIBUTE", "CONTENT"]
 
-const Node = (type, value) => ({
+export const Node = (type, value) => ({
     type,
     value
 })
 
-const ContentNode = value => Node(CONTENT, value)
+export const ContentNode = value => Node(CONTENT, value)
 
-const ElementNode = (type, attributes, children) => {
+export const ElementNode = (type, attributes, children) => {
     return Node(ELEMENT, {
         type,
         attributes,
@@ -20,7 +20,7 @@ const ElementNode = (type, attributes, children) => {
     })
 }
 
-const AttribNode = (name, value) => {
+export const AttribNode = (name, value) => {
     return Node(ATTRIBUTE, {
         name,
         value
@@ -62,7 +62,7 @@ const parseExpr = (lexer, scopingElement) => {
                     elementLexem.value,
                     elementAttributes,
                     elementChildren
-                    ))
+                ))
                 break
             }
             case TOKEN_TYPE.CLOSE_ELEMENT: {
@@ -83,7 +83,7 @@ const parseExpr = (lexer, scopingElement) => {
     }
     return children
 }
-    
+
 const parseElementAttributes = lexer => {
     const attribs = []
     let currentToken = lexer.peek()
@@ -102,18 +102,11 @@ const parseElementAttributes = lexer => {
     return attribs
 }
 
-function transpile(xmlAsString, astConverter) {
+export function transpile(xmlAsString, astConverter) {
     const lexer = createLexer(xmlAsString)
     const ast = parseXML(lexer, xmlAsString)
     if (astConverter) {
         return astConverter.convert(ast)
     }
     return ast
-}
-
-module.exports = {
-    transpile,
-    Node,
-    ElementNode,
-    AttribNode
 }

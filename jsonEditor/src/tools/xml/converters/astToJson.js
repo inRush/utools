@@ -57,6 +57,6 @@ const buildAttributes = arrayNodes => {
     return null
 }
 
-module.exports = {
+export default {
     convert: convertToJSON
 }

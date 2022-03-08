@@ -1,5 +1,6 @@
 const fs = require('fs');
 const open = require('open')
+const quickType = require('quicktype-core')
 
 function isTextFile(filepath, length) {
     const fd = fs.openSync(filepath, 'r');
@@ -17,7 +18,7 @@ function isTextFile(filepath, length) {
     return true;
 }
 
-window.getFile = function (path) {
+globalThis._getFile = function (path) {
     if (isTextFile(path)) {
         return fs.readFileSync(path);
     }
@@ -28,4 +29,25 @@ window.open = function (url) {
     if (url) {
         open(url);
     }
+}
+
+globalThis._quickType = quickType
+globalThis._convertJson = async function (targetLanguage, typeName, jsonString) {
+    const jsonInput = quickType.jsonInputForTargetLanguage(targetLanguage);
+
+    // We could add multiple samples for the same desired
+    // type, or many sources for other types. Here we're
+    // just making one type from one piece of sample JSON.
+    await jsonInput.addSource({
+        name: typeName,
+        samples: [jsonString],
+    });
+
+    const inputData = new quickType.InputData();
+    inputData.addInput(jsonInput);
+
+    return await quickType.quicktype({
+        inputData,
+        lang: targetLanguage,
+    });
 }

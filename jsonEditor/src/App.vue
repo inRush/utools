@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue';
-import MonacoEditor from '@/components/MonacoEditor.vue'
-import JsonPathViewer from '@/components/JsonPathViewer.vue';
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import Db from "@/tools/db";
 
 const jsonObj = {
@@ -59,7 +57,7 @@ function onDrop(e: DragEvent) {
   const files = e.dataTransfer?.files;
   if (files) {
     // @ts-ignore
-    const fileContent = window.getFile(files[0].path)?.toString();
+    const fileContent = _getFile(files[0].path)?.toString();
     if (fileContent) {
       content.value = fileContent;
     }

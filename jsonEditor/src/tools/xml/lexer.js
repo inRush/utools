@@ -1,6 +1,7 @@
 'use strict'
 
-const {Token, TOKEN_TYPE} = require('./model')
+import {Token, TOKEN_TYPE} from './model'
+
 const EOF_TOKEN = Token('EOF')
 
 const isCharBlank = char => char === " " || char === "\n" || char === "\r" || char === "\t"
@@ -23,7 +24,7 @@ const normalizeXMLForLexer = xmlAsString => {
     return xmlAsString
 }
 
-function createLexer(xmlAsString) {
+export function createLexer(xmlAsString) {
 
     xmlAsString = normalizeXMLForLexer(xmlAsString)
 
@@ -194,8 +195,4 @@ function createLexer(xmlAsString) {
         next,
         hasNext
     }
-}
-
-module.exports = {
-    createLexer
 }

@@ -1,0 +1,16 @@
+{
+  "name": "json-editor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "preload.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "inRush",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "open": "^8.4.0",
+    "quicktype-core": "^6.0.70"
+  }
+}

@@ -1,6 +1,6 @@
 'use strict';
 
-const TOKEN_TYPE = {
+export const TOKEN_TYPE = {
     OPEN_BRACKET: "OPEN_BRACKET",
     ELEMENT_TYPE: "ELEMENT_TYPE",
     CLOSE_ELEMENT: "CLOSE_ELEMENT",
@@ -12,12 +12,7 @@ const TOKEN_TYPE = {
     EOF: "EOF"
 }
 
-const Token = (type, value) => ({
+export const Token = (type, value) => ({
     type,
     value
 })
-
-module.exports = {
-    Token,
-    TOKEN_TYPE
-}
