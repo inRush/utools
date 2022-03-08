@@ -11,6 +11,14 @@ import JsonPathViewer from './JsonPathViewer.vue';
 import xmlToJson from '@/tools/xml/xmlToJson'
 import xmlToJsonConvertor from "@/tools/xml/xmlToJsonConvertor";
 
+const exposeViewerEditorConfig = {
+  lineNumbers: 'off',
+  glyphMargin: false,
+  folding: false,
+  lineDecorationsWidth: 0,
+  lineNumbersMinChars: 0,
+  contextmenu: false
+}
 const props = withDefaults(defineProps<{
   value: string
 }>(), {});
@@ -19,7 +27,8 @@ let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
 let monacoEditor: EditorType;
 let openJsonPathViewer = ref(false);
-let jsonPathObj = computed(() => {
+const detailViewerShow = ref(false);
+const jsonPathObj = computed(() => {
   if (!openJsonPathViewer.value) {
     return {};
   }
@@ -29,6 +38,7 @@ let jsonPathObj = computed(() => {
     return 'json格式错误';
   }
 })
+const exposeObj = ref('')
 // emit
 const emit = defineEmits<{
   (e: 'update:value', value: string | undefined): void
@@ -137,6 +147,26 @@ function multipleCursors(points: { start: number, end: number }) {
   }
 }
 
+function jsonPathClick() {
+  openJsonPathViewer.value = !openJsonPathViewer.value;
+  detailViewerShow.value = false;
+}
+
+async function convert() {
+  detailViewerShow.value = !detailViewerShow.value;
+  openJsonPathViewer.value = false;
+  if (detailViewerShow.value) {
+    const {lines: JavaCodes} = await _convertJson(
+        "Java",
+        "Json",
+        getEditor()?.getValue(),
+        {
+          rendererOptions: {'just-types': 'true'}
+        }
+    );
+    exposeObj.value = JavaCodes.join("\n");
+  }
+}
 
 function onHistorySelect(history: History) {
   updateValue(history.text)
@@ -160,26 +190,20 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
 }
 
 
-async function convert() {
-  const {lines: JavaCodes} = await _convertJson(
-      "Java",
-      "Test",
-      getEditor()?.getValue()
-  );
-  console.log(JavaCodes.join("\n"));
-}
-
 </script>
 
 <template>
   <div style="height: 100vh" class="d-flex flex-column ">
     <div class="editor-panel">
-      <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer}">
+      <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer||detailViewerShow}">
         <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"
                        :editor-mounted="onEditorMounted" language="json"/>
       </div>
-      <div class="json-path-viewer-wrapper" v-show="openJsonPathViewer">
+      <div class="other-viewer-wrapper json-path-viewer-wrapper" v-show="openJsonPathViewer">
         <json-path-viewer :json="jsonPathObj"/>
+      </div>
+      <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="detailViewerShow">
+        <monaco-editor v-model:value="exposeObj" language="java" :option="exposeViewerEditorConfig"/>
       </div>
     </div>
 
@@ -190,9 +214,9 @@ async function convert() {
       <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="convertBase64">去base64</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
-      <v-btn color="blue" size="small" variant="text" @click="openJsonPathViewer = !openJsonPathViewer">JSON-PATH
+      <v-btn color="blue" size="small" variant="text" @click="jsonPathClick">JSON-PATH
       </v-btn>
-      <v-btn color="blue" size="small" variant="text" @click="convert">转换</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="convert">语言转换</v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>
@@ -224,6 +248,7 @@ async function convert() {
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!--    <detail-viewer :detail="exposeObj" v-model:show="detailViewerShow"/>-->
   </div>
 </template>
 
@@ -249,7 +274,7 @@ $history-list-header-height: 48px;
     }
   }
 
-  .json-path-viewer-wrapper {
+  .other-viewer-wrapper {
     height: 100%;
     width: 50%;
   }

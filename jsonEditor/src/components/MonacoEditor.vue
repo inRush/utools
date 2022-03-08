@@ -1,11 +1,12 @@
 <script lang="ts">
 import * as monaco from 'monaco-editor';
-import { onDeactivated, onMounted, ref, Ref, watch, defineComponent, PropType } from "vue";
+import { defineComponent, onDeactivated, onMounted, PropType, ref, watch } from "vue";
 import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import TypeScriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import CssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+import '@/monaco-syntax'
 
 if (!(self as any).MonacoEnvironment) {
   (self as any).MonacoEnvironment = {
@@ -34,7 +35,7 @@ export default defineComponent({
     value: {type: String, required: true},
     language: {
       type: String,
-      validator: (language: string) => ['javascript', 'typescript', 'json', 'html', 'css'].indexOf(language) >= 0
+      validator: (language: string) => ['javascript', 'typescript', 'json', 'html', 'css', 'java'].indexOf(language) >= 0
     },
     option: {
       type: Object as PropType<monaco.editor.IStandaloneEditorConstructionOptions>
@@ -47,8 +48,11 @@ export default defineComponent({
     let editor: monaco.editor.IStandaloneCodeEditor | undefined = undefined;
     const editorContainer = ref<HTMLElement | null>(null);
     watch(() => props.value, (newValue) => {
+      if (newValue === editor?.getValue()) {
+        return;
+      }
       if (props.option?.readOnly) {
-        editor?.setValue(newValue)
+        editor?.setValue(newValue);
       } else {
         editor?.executeEdits('', [{
           // @ts-ignore

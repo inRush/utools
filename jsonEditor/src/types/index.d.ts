@@ -1,5 +1,6 @@
 import * as quicktype from "quicktype-core";
 import { SerializedRenderResult } from "quicktype-core/dist/Source";
+import { Options } from "quicktype-core/dist/Run";
 
 export {}
 
@@ -14,6 +15,7 @@ declare global {
    * @param targetLanguage 目标语言
    * @param typeName 类名
    * @param jsonString json字符串
+   * @param options 配置
    */
-  function _convertJson(targetLanguage: string, typeName: string, jsonString: string): Promise<SerializedRenderResult>;
+  function _convertJson(targetLanguage: string, typeName: string, jsonString: string, options?: Partial<Options>): Promise<SerializedRenderResult>;
 }

@@ -32,7 +32,7 @@ window.open = function (url) {
 }
 
 globalThis._quickType = quickType
-globalThis._convertJson = async function (targetLanguage, typeName, jsonString) {
+globalThis._convertJson = async function (targetLanguage, typeName, jsonString, options) {
     const jsonInput = quickType.jsonInputForTargetLanguage(targetLanguage);
 
     // We could add multiple samples for the same desired
@@ -46,8 +46,8 @@ globalThis._convertJson = async function (targetLanguage, typeName, jsonString) 
     const inputData = new quickType.InputData();
     inputData.addInput(jsonInput);
 
-    return await quickType.quicktype({
+    return await quickType.quicktype(Object.assign({
         inputData,
         lang: targetLanguage,
-    });
+    }, options));
 }

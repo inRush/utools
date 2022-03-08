@@ -31,6 +31,7 @@ const props = defineProps<{
   word-break: break-all;
   word-wrap: break-word;
   white-space: break-spaces;
+
   &.v-enter-active, &.v-leave-active {
     transition: right .3s;
   }
@@ -43,7 +44,7 @@ const props = defineProps<{
     display: none;
   }
 
-  &:focus{
+  &:focus {
     outline: none;
   }
 
