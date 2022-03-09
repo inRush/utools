@@ -9,8 +9,6 @@
   "author": "inRush",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.21",
-    "open": "^8.4.0",
-    "quicktype-core": "^6.0.70"
+    "open": "^8.4.0"
   }
 }

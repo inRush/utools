@@ -12,11 +12,11 @@ export default defineConfig({
       autoImport: true,
     })
   ],
-  server: {
-    fs: {
-      strict: false
-    }
-  },
+  // server: {
+  //   fs: {
+  //     strict: false
+  //   }
+  // },
   base: './',
   define: {'process.env': {}},
   resolve: {

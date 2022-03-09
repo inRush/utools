@@ -7,6 +7,9 @@
   <title>Vite App</title>
   <script>
       global = globalThis
+      globalThis.process = {
+          browser: true
+      }
   </script>
 </head>
 <body>

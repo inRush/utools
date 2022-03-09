@@ -10,6 +10,7 @@ import { EditorType, ISelection, MonacoType, Selection } from "@/components/Mona
 import JsonPathViewer from './JsonPathViewer.vue';
 import xmlToJson from '@/tools/xml/xmlToJson'
 import xmlToJsonConvertor from "@/tools/xml/xmlToJsonConvertor";
+import ExposeViewer from './ExposeViewer.vue';
 
 const exposeViewerEditorConfig = {
   lineNumbers: 'off',
@@ -37,8 +38,13 @@ const jsonPathObj = computed(() => {
   } catch (e) {
     return 'json格式错误';
   }
-})
-const exposeObj = ref('')
+});
+const jsonExposeObj = computed(() => {
+  if (!detailViewerShow.value) {
+    return '{}';
+  }
+  return props.value;
+});
 // emit
 const emit = defineEmits<{
   (e: 'update:value', value: string | undefined): void
@@ -54,7 +60,9 @@ function updateValue(value: string | undefined) {
 }
 
 function format() {
-  getEditor()?.getAction("editor.action.formatDocument").run();
+  nextTick(() => {
+    getEditor()?.getAction("editor.action.formatDocument").run();
+  })
 }
 
 /**
@@ -152,20 +160,9 @@ function jsonPathClick() {
   detailViewerShow.value = false;
 }
 
-async function convert() {
+async function languageConvert() {
   detailViewerShow.value = !detailViewerShow.value;
   openJsonPathViewer.value = false;
-  if (detailViewerShow.value) {
-    const {lines: JavaCodes} = await _convertJson(
-        "Java",
-        "Json",
-        getEditor()?.getValue(),
-        {
-          rendererOptions: {'just-types': 'true'}
-        }
-    );
-    exposeObj.value = JavaCodes.join("\n");
-  }
 }
 
 function onHistorySelect(history: History) {
@@ -185,6 +182,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
     }
     Db.get().addHistory(value);
     updateValue(value);
+    format();
   });
   monacoEditor = editor;
 }
@@ -203,7 +201,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
         <json-path-viewer :json="jsonPathObj"/>
       </div>
       <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="detailViewerShow">
-        <monaco-editor v-model:value="exposeObj" language="java" :option="exposeViewerEditorConfig"/>
+        <expose-viewer :json="jsonExposeObj"/>
       </div>
     </div>
 
@@ -216,7 +214,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
       <v-btn color="blue" size="small" variant="text" @click="multipleCursors(null)">多光标</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="jsonPathClick">JSON-PATH
       </v-btn>
-      <v-btn color="blue" size="small" variant="text" @click="convert">语言转换</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="languageConvert">语言转换</v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>

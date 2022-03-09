@@ -32,7 +32,7 @@ export type MonacoType = typeof monaco;
 export type EditorType = monaco.editor.IStandaloneCodeEditor;
 export default defineComponent({
   props: {
-    value: {type: String, required: true},
+    value: String,
     language: {
       type: String,
       validator: (language: string) => ['javascript', 'typescript', 'json', 'html', 'css', 'java'].indexOf(language) >= 0
@@ -52,12 +52,12 @@ export default defineComponent({
         return;
       }
       if (props.option?.readOnly) {
-        editor?.setValue(newValue);
+        editor?.setValue(newValue || "");
       } else {
         editor?.executeEdits('', [{
           // @ts-ignore
           range: editor?.getModel()?.getFullModelRange(),
-          text: newValue
+          text: newValue || ""
         }]);
       }
     })

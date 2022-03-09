@@ -9,13 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mdi/font": "5.9.55",
+    "buffer": "^6.0.3",
     "jsonpath": "^1.1.1",
+    "lodash": "^4.17.21",
     "monaco-editor": "^0.32.1",
     "prettier": "^2.5.1",
     "roboto-fontface": "*",
     "vue": "^3.2.25",
-    "vuetify": "^3.0.0-alpha.0",
+    "vuetify": "^3.0.0-alpha.13",
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {

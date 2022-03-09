@@ -2,6 +2,7 @@
 import JsonViewer from '@/components/JsonViewer.vue';
 import { ref } from "vue";
 import Db from "@/tools/db";
+import Json from "@/tools/json";
 
 const jsonObj = {
   "main": "index.html",
@@ -47,7 +48,7 @@ window.utools && utools.onPluginEnter(({code, type, payload}) => {
   if (payload) {
     let value = payload.toLowerCase();
     if (value && value !== 'json' && value !== '') {
-      content.value = payload;
+      content.value = Json.beautify(payload) || payload;
       Db.get().addHistory(payload);
     }
   }
