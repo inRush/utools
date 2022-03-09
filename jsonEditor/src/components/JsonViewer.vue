@@ -1,30 +1,26 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, nextTick, reactive, ref } from "vue";
 import * as Json from '../tools/json';
 import Base64 from "@/tools/base64";
 import Db from '@/tools/db';
-import HistoryPanel from './HistoryPanel.vue'
+import Storage from '@/tools/db';
+
 import MonacoEditor from './MonacoEditor.vue';
 import { History } from "@/model";
 import { EditorType, ISelection, MonacoType, Selection } from "@/components/MonacoEditor.vue";
-import JsonPathViewer from './JsonPathViewer.vue';
 import xmlToJson from '@/tools/xml/xmlToJson'
 import xmlToJsonConvertor from "@/tools/xml/xmlToJsonConvertor";
-import ExposeViewer from './ExposeViewer.vue';
 
-const exposeViewerEditorConfig = {
-  lineNumbers: 'off',
-  glyphMargin: false,
-  folding: false,
-  lineDecorationsWidth: 0,
-  lineNumbersMinChars: 0,
-  contextmenu: false
-}
+
+const HistoryPanel = defineAsyncComponent(() => import ('./HistoryPanel.vue'))
+const JsonPathViewer = defineAsyncComponent(() => import('./JsonPathViewer.vue'))
+const ExposeViewer = defineAsyncComponent(() => import('./ExposeViewer.vue'))
+
 const props = withDefaults(defineProps<{
   value: string
 }>(), {});
 // data
-let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false);
+let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false), editorInit = ref(false);
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
 let monacoEditor: EditorType;
 let openJsonPathViewer = ref(false);
@@ -55,8 +51,8 @@ function getEditor() {
   return monacoEditor;
 }
 
-function updateValue(value: string | undefined) {
-  emit('update:value', value);
+function updateValue(value: string | undefined, format: boolean = false) {
+  emit('update:value', format ? Json.beautify(value) : value);
 }
 
 function format() {
@@ -155,6 +151,10 @@ function multipleCursors(points: { start: number, end: number }) {
   }
 }
 
+function onOpenHistoryPanel() {
+  openHistoryPanel.value = true;
+}
+
 function jsonPathClick() {
   openJsonPathViewer.value = !openJsonPathViewer.value;
   detailViewerShow.value = false;
@@ -166,7 +166,7 @@ async function languageConvert() {
 }
 
 function onHistorySelect(history: History) {
-  updateValue(history.text)
+  updateValue(history.text, true)
 }
 
 function onEditorMounted(editor: EditorType, monaco: MonacoType) {
@@ -181,11 +181,16 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
     } catch (e) {
     }
     Db.get().addHistory(value);
-    updateValue(value);
-    format();
+    updateValue(value, true);
   });
   monacoEditor = editor;
 }
+
+Storage.ready().then(() => {
+  Db.get().clearTimeoutHistory()
+  Db.get().addHistory(props.value);
+  editorInit.value = true
+})
 
 
 </script>
@@ -197,16 +202,16 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
         <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"
                        :editor-mounted="onEditorMounted" language="json"/>
       </div>
-      <div class="other-viewer-wrapper json-path-viewer-wrapper" v-show="openJsonPathViewer">
+      <div class="other-viewer-wrapper json-path-viewer-wrapper" v-show="openJsonPathViewer" v-if="editorInit">
         <json-path-viewer :json="jsonPathObj"/>
       </div>
-      <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="detailViewerShow">
+      <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="detailViewerShow" v-if="editorInit">
         <expose-viewer :json="jsonExposeObj"/>
       </div>
     </div>
 
     <div class="tools-list">
-      <v-btn color="blue" size="small" variant="text" @click="openHistoryPanel=true">历史</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="onOpenHistoryPanel">历史</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="compress">压缩</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="escape">转义</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
@@ -216,7 +221,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
       </v-btn>
       <v-btn color="blue" size="small" variant="text" @click="languageConvert">语言转换</v-btn>
     </div>
-    <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect"/>
+    <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect" v-if="editorInit"/>
     <v-dialog v-model="openMultipleCursorDialog" persistent>
       <v-card>
         <v-card-text>
@@ -246,7 +251,6 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!--    <detail-viewer :detail="exposeObj" v-model:show="detailViewerShow"/>-->
   </div>
 </template>
 

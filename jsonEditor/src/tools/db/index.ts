@@ -2,7 +2,7 @@ import Env from "@/tools/env";
 import { utools } from '@/tools/variable'
 import { History } from "@/model";
 import StorageRef from "@/tools/db/storageRef";
-import { Ref } from "vue";
+import { ref, Ref } from "vue";
 
 export interface IStorage {
   /**
@@ -75,7 +75,11 @@ export class Db {
 }
 
 let instance: Db;
+const init = ref(false)
 export default {
+  init() {
+    return init;
+  },
   get(): Db {
     return instance;
   },
@@ -84,6 +88,7 @@ export default {
       if (Env.isUtools()) {
         utools.onPluginReady(() => {
           instance = new Db();
+          init.value = true;
           resolve();
         });
       } else {

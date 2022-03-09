@@ -28,4 +28,8 @@ declare global {
    * @param options
    */
   function _convertMultipleJson(targetLanguage: string, typeName: string, jsonString: string, options?: Partial<Options>): Promise<MultiFileRenderResult>;
+
+  interface Window {
+    utools: UTools
+  }
 }

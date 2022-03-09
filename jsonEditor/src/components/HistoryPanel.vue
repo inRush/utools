@@ -1,14 +1,13 @@
 <template>
   <mask-viewer :show="props.show" @click="$emit('update:show', false)"/>
   <transition>
-    <div v-if="props.show" class="history-panel">
+    <div v-show="props.show" class="history-panel">
       <v-row class="search-wrapper" align="center">
         <v-col cols="12" sm="2" class="search-label text-center">历史记录</v-col>
         <v-col cols="12" sm="9" class="search-input-wrapper ">
           <input type="text" placeholder="搜索" class="search-input" v-model="searchInput">
         </v-col>
         <v-col class="text-center">
-          <!--          <v-icon icon="mdi-close" @click="$emit('update:show',false)"></v-icon>-->
         </v-col>
       </v-row>
       <v-list class="history-list">
@@ -43,7 +42,6 @@ let props = withDefaults(defineProps<{
 // data
 let detailShow = ref(false), detailText = ref('');
 let searchInput = ref('');
-Db.get().clearTimeoutHistory()
 let histories = computed(()=>{
   if (!searchInput.value || searchInput.value === '') {
     return Db.get().histories.value;

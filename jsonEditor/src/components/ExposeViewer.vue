@@ -83,10 +83,10 @@ async function _convert(targetLanguage: string, typeName: string, jsonString: st
                    :editor-mounted="onEditorMounted" :option="editorOption"/>
     <!--    <mask-viewer :show="showOptions"/>-->
     <!--    <div class="options-viewer">-->
-    <!--      <v-tabs>-->
-    <!--        <v-tab>语言选项</v-tab>-->
-    <!--        <v-tab>其他</v-tab>-->
-    <!--      </v-tabs>-->
+    <!--      <div class="options-tabs">-->
+    <!--        <span class="">语言选项</span>-->
+    <!--        <span>其他</span>-->
+    <!--      </div>-->
     <!--    </div>-->
   </div>
 </template>
