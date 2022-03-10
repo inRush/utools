@@ -56,9 +56,7 @@ function updateValue(value: string | undefined, format: boolean = false) {
 }
 
 function format() {
-  nextTick(() => {
-    getEditor()?.getAction("editor.action.formatDocument").run();
-  })
+  getEditor()?.getAction("editor.action.formatDocument").run();
 }
 
 /**
@@ -189,7 +187,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
 App.enter().then((value: EnterValue) => {
   if (value.type === 'utools') {
     const payload = value.data?.payload;
-    if (payload && payload !== 'json' && payload !== '') {
+    if (payload && payload.toLowerCase() !== 'json' && payload !== '') {
       updateValue(payload, true);
       Db.get()?.addHistory(payload);
     }
@@ -218,6 +216,7 @@ App.enter().then((value: EnterValue) => {
 
     <div class="tools-list">
       <v-btn color="blue" size="small" variant="text" @click="onOpenHistoryPanel">历史</v-btn>
+      <v-btn color="blue" size="small" variant="text" @click="format">格式化</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="compress">压缩</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="escape">转义</v-btn>
       <v-btn color="blue" size="small" variant="text" @click="clearEscape">去转义</v-btn>
