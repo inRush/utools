@@ -1,7 +1,17 @@
 <script setup lang="ts">
 import MonacoEditor, { EditorType, MonacoType } from './MonacoEditor.vue';
-import { ref, watch } from "vue";
-import { InputData, jsonInputForTargetLanguage, Options, quicktype } from "quicktype-core";
+import { computed, reactive, ref, watch } from "vue";
+import {
+  defaultInferenceFlags,
+  defaultTargetLanguages,
+  InputData,
+  jsonInputForTargetLanguage,
+  languageNamed,
+  Options,
+  quicktype
+} from "quicktype-core";
+import MaskViewer from './MaskViewer.vue'
+
 // props
 const props = defineProps<{
   json: string
@@ -73,6 +83,53 @@ async function _convert(targetLanguage: string, typeName: string, jsonString: st
   }, options));
 }
 
+const languages = defaultTargetLanguages
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .map(language => language.displayName)
+type LanguageOptionType = { [key: string]: Options }
+// @ts-ignore
+const languageOptions: LanguageOptionType = reactive({
+  'Java': {
+    lang: 'Java',
+    ...defaultInferenceFlags,
+    rendererOptions: {}
+  }
+})
+const currentLanguage = ref("Java")
+const currentLanguageOption = computed(() => {
+  return languageOptions[currentLanguage.value];
+})
+
+
+const languagePrimaryOptions = computed(() => {
+  languageNamed(currentLanguage.value)?.optionDefinitions.forEach(option => {
+    if (!languageOptions[currentLanguage.value].rendererOptions[option.name]) {
+      languageOptions[currentLanguage.value].rendererOptions[option.name] = option.defaultValue;
+    }
+  })
+  return languageNamed(currentLanguage.value)?.optionDefinitions
+      .filter(option => option.kind === 'primary')
+      .sort((a, b) => {
+        if (a.type === Boolean && b.type === String) {
+          return 1;
+        }
+        if (a.type === String && b.type === Boolean) {
+          return -1;
+        }
+        return a.name.localeCompare(b.name);
+      })
+})
+const languageSecondaryOptions = computed(() => {
+  return languageNamed(currentLanguage.value)?.optionDefinitions
+      .filter(option => option.kind === 'secondary')
+      .sort((a, b) => {
+        if (a.type === Boolean) {
+          return 1;
+        }
+        return a.name.localeCompare(b.name)
+      })
+})
+
 
 </script>
 
@@ -81,13 +138,38 @@ async function _convert(targetLanguage: string, typeName: string, jsonString: st
     <monaco-editor ref="editorRef"
                    :value="code" class="expose-editor" :language="language"
                    :editor-mounted="onEditorMounted" :option="editorOption"/>
-    <!--    <mask-viewer :show="showOptions"/>-->
-    <!--    <div class="options-viewer">-->
-    <!--      <div class="options-tabs">-->
-    <!--        <span class="">语言选项</span>-->
-    <!--        <span>其他</span>-->
-    <!--      </div>-->
-    <!--    </div>-->
+    <mask-viewer :show="showOptions"/>
+    <v-container class="options-viewer">
+      <v-select
+          v-model="currentLanguage"
+          :items="languages"
+          label="语言"
+          hide-details
+      ></v-select>
+      <template v-for="(option,index) in languagePrimaryOptions" :key="index">
+        <v-select v-if="option.legalValues"
+                  v-model="languageOptions[currentLanguage].rendererOptions[option.name]"
+                  :items="option.legalValues"
+                  :label="option.description"
+                  hide-details
+        ></v-select>
+        <v-text-field v-else-if="option.type === String"
+                      v-model="languageOptions[currentLanguage].rendererOptions[option.name]"
+                      :label="option.description"
+                      hide-details
+        ></v-text-field>
+        <v-switch v-else
+                  v-model="languageOptions[currentLanguage].rendererOptions[option.name]"
+                  :label="option.description"
+                  hide-details
+        ></v-switch>
+      </template>
+      <v-switch
+          v-model="languageOptions[currentLanguage].rendererOptions['allPropertiesOptional']"
+          label="Make all properties optional"
+          hide-details
+      ></v-switch>
+    </v-container>
   </div>
 </template>
 
@@ -109,5 +191,10 @@ $optionViewerHeight: 70vh;
   left: calc((100vw - #{$optionViewerWidth}) / 2);
   background-color: #212121;
   border-radius: 6px;
+  overflow-y: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 </style>
