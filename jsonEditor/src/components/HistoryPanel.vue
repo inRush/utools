@@ -15,7 +15,7 @@
         <template v-for="(item,index) in histories" :key="item">
           <v-list-item :value="index" @click="onItemClick(item)">
             <v-row align="center" style="width: 100vw;overflow: hidden">
-              <v-col cols="12" sm="2" class="text-center" >{{ $filters.timeStepFormat(item.time) }}</v-col>
+              <v-col class="text-center" cols="12" sm="2">{{ $filters.timeStepFormat(item.time) }}</v-col>
               <v-col cols="12" sm="10">
                 <pre class="history-list-item-text" v-overflow="historyCfg" style="flex: 0 1">{{ item.text }}</pre>
               </v-col>
@@ -42,12 +42,12 @@ let props = withDefaults(defineProps<{
 // data
 let detailShow = ref(false), detailText = ref('');
 let searchInput = ref('');
-let histories = computed(()=>{
+let histories = computed(() => {
   if (!searchInput.value || searchInput.value === '') {
-    return Db.get().histories.value;
+    return Db.get()?.histories.value;
   }
   let filterItems = [];
-  for (let history of Db.get().histories.value) {
+  for (let history of Db.get()?.histories.value || []) {
     if (history.text.indexOf(searchInput.value) >= 0) {
       filterItems.push(history);
     }
@@ -68,7 +68,6 @@ const emit = defineEmits<{
   (e: 'update:show', value: boolean): void
   (e: 'itemClick', value: History): void
 }>();
-
 
 
 function onItemClick(item: History) {

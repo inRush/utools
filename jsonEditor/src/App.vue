@@ -1,17 +1,8 @@
 <script setup lang="ts">
 import JsonViewer from '@/components/JsonViewer.vue';
 import { ref } from "vue";
-import Json from "@/tools/json";
 
 const content = ref("");
-window.utools && utools.onPluginEnter(({code, type, payload}) => {
-  if (payload) {
-    let value = payload.toLowerCase();
-    if (value && value !== 'json' && value !== '') {
-      content.value = Json.beautify(payload) || payload;
-    }
-  }
-})
 
 function onDrop(e: DragEvent) {
   const files = e.dataTransfer?.files;

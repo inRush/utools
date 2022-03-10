@@ -3,8 +3,8 @@ import { computed, defineAsyncComponent, nextTick, reactive, ref } from "vue";
 import * as Json from '../tools/json';
 import Base64 from "@/tools/base64";
 import Db from '@/tools/db';
-import Storage from '@/tools/db';
 
+import App, { EnterValue } from '@/tools/app'
 import MonacoEditor from './MonacoEditor.vue';
 import { History } from "@/model";
 import { EditorType, ISelection, MonacoType, Selection } from "@/components/MonacoEditor.vue";
@@ -180,15 +180,21 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
       value = JSON.stringify(xmlToJson.convertXML(value, xmlToJsonConvertor), null, 4);
     } catch (e) {
     }
-    Db.get().addHistory(value);
     updateValue(value, true);
+    Db.get()?.addHistory(value);
   });
   monacoEditor = editor;
 }
 
-Storage.ready().then(() => {
-  Db.get().clearTimeoutHistory()
-  Db.get().addHistory(props.value);
+App.enter().then((value: EnterValue) => {
+  if (value.type === 'utools') {
+    const payload = value.data?.payload;
+    if (payload && payload !== 'json' && payload !== '') {
+      updateValue(payload, true);
+      Db.get()?.addHistory(payload);
+    }
+  }
+  Db.get()?.clearTimeoutHistory();
   editorInit.value = true
 })
 
