@@ -3,10 +3,8 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import overflow from "@/directive/overflow";
 import filters from '@/filter'
-import Db from '@/tools/db'
 
 (async () => {
-  Db.init();
   const app = createApp(App)
   app.config.globalProperties.$filters = filters
   app.config.globalProperties.$utools = (window as any).utools

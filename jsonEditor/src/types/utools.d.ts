@@ -145,7 +145,7 @@ declare interface UTools {
    * @param {string} name
    * @return {string}
    */
-  getPath: (name: 'home' | 'appData' | 'userData' | 'temp' | 'exe' | 'desktop' | 'documents' | 'download' | 'music' | 'pictures' | 'videos' | 'logs') => string;
+  getPath: (name: 'home' | 'appData' | 'userData' | 'temp' | 'exe' | 'desktop' | 'documents' | 'downloads' | 'music' | 'pictures' | 'videos' | 'logs') => string;
 
   /**
    * 该方法只适用于在macOS下执行，该方法调用后会弹出窗口向用户申请辅助权限。
@@ -164,6 +164,12 @@ declare interface UTools {
    * @return {boolean}
    */
   showMainWindow: () => boolean;
+
+  /**
+   * 弹出文件保存框
+   * @param options
+   */
+  showSaveDialog: (options: any) => string
 
   /**
    * 执行该方法将会修改插件窗口的高度。

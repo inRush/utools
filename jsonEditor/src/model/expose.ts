@@ -1,19 +1,3 @@
-export interface BaseExposeConfig {
-  language: string,
-  className: string
-  onlyType: boolean
-}
+import { Options } from "quicktype-core";
 
-export interface HasPackageExposeConfig extends BaseExposeConfig {
-  packageName: string
-}
-
-
-export interface JavaExposeConfig extends HasPackageExposeConfig {
-}
-
-export interface GoExposeConfig extends HasPackageExposeConfig {
-}
-
-export interface JavaScriptExposeConfig extends BaseExposeConfig {
-}
+export type LanguageOptionType = { [key: string]: Options }

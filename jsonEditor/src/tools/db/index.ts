@@ -1,7 +1,12 @@
 import { History } from "@/model";
-import StorageRef from "@/tools/db/storageRef";
-import { Ref } from "vue";
+import { ref, Ref, watchEffect } from "vue";
 import App from "@/tools/app";
+import { LanguageOptionType } from "@/model/expose";
+import { UnwrapRef } from "@vue/reactivity";
+import Env from "@/tools/env";
+import Utools from "@/tools/db/utools";
+import Local from "@/tools/db/local";
+import { languageOptions } from './quicktype'
 
 export interface IStorage {
   /**
@@ -25,15 +30,62 @@ export interface IStorage {
   removeItem(key: string): any;
 }
 
+let storage: IStorage;
+if (Env.isUtools()) {
+  storage = new Utools();
+} else {
+  storage = new Local();
+}
+
+function initAndWatch(key: string, variable: Ref) {
+  let storageValue = storage.getItem(key);
+  if (storageValue) {
+    if (variable.value && typeof variable.value === 'object') {
+      if (variable.value.length && storageValue.length) {
+        [].push.apply(variable.value, storageValue);
+      } else {
+        variable.value = Object.assign(variable.value, storageValue);
+      }
+    } else {
+      variable.value = storageValue;
+    }
+  }
+  watchEffect(() => {
+    storage.setItem(key, variable.value)
+  });
+}
+
 export class Db {
-  private readonly _histories: Ref<History[]>;
+  private readonly _histories: Ref<UnwrapRef<History[]>> = ref([]);
+  private readonly _languageOptions: Ref<UnwrapRef<LanguageOptionType>> = ref(languageOptions);
+  private readonly _currentLanguage: Ref<string> = ref('Java');
 
   constructor() {
-    this._histories = StorageRef('histories', []) as Ref<History[]>;
+    App.init().value ? this._init() : App.ready().then(() => {
+      this._init()
+    });
+  }
+
+  get languageOptions() {
+    return this._languageOptions;
   }
 
   get histories() {
     return this._histories;
+  }
+
+  get currentLanguage() {
+    return this._currentLanguage;
+  }
+
+  _init() {
+    for (let key in this) {
+      console.log(key)
+      if (this.hasOwnProperty(key) && key.indexOf("_") === 0) {
+        // @ts-ignore
+        initAndWatch(key.replace("_", ""), this[key]);
+      }
+    }
   }
 
   addHistory(text: string) {
@@ -73,15 +125,14 @@ export class Db {
   }
 }
 
-let instance: Db;
-
+let instance: Db = new Db();
 export default {
   init() {
     App.init().value ? instance = new Db : App.ready().then(() => {
       instance = new Db();
     })
   },
-  get(): Db | undefined {
+  get(): Db {
     return instance;
   }
 }

@@ -24,10 +24,15 @@ export default (key: string, initValue: any) => {
         },
         set(target: any, p: string | symbol, value: any, receiver: any): boolean {
           target[p] = value;
+          console.log(p)
           storage.setItem(key, target);
           return true;
         }
       })
+    } else {
+      if (storage.getItem(key)) {
+        initValue = storage.getItem(key);
+      }
     }
     return {
       get() {
