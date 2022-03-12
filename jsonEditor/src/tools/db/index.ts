@@ -59,6 +59,7 @@ export class Db {
   private readonly _histories: Ref<UnwrapRef<History[]>> = ref([]);
   private readonly _languageOptions: Ref<UnwrapRef<LanguageOptionType>> = ref(languageOptions);
   private readonly _currentLanguage: Ref<string> = ref('Java');
+  private readonly _languageTypeName: Ref<string> = ref('Welcome');
 
   constructor() {
     App.init().value ? this._init() : App.ready().then(() => {
@@ -76,6 +77,10 @@ export class Db {
 
   get currentLanguage() {
     return this._currentLanguage;
+  }
+
+  get languageTypeName() {
+    return this._languageTypeName;
   }
 
   _init() {

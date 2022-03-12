@@ -227,35 +227,37 @@ App.enter().then((value: EnterValue) => {
       <v-btn color="blue" size="small" variant="text" @click="languageConvert">语言转换</v-btn>
     </div>
     <history-panel v-model:show="openHistoryPanel" @itemClick="onHistorySelect" v-if="editorInit"/>
-    <v-dialog v-model="openMultipleCursorDialog" persistent>
-      <v-card>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"
-                              label="起始行" required type="number"
-                              hide-details></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required
-                              type="number"
-                              hide-details></v-text-field>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">
-            关闭
-          </v-btn>
-          <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">
-            确认
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <v-overlay theme="light" v-model="openMultipleCursorDialog">
+      <v-dialog v-model="openMultipleCursorDialog">
+        <v-card theme="dark">
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field :autofocus="true" class="input" v-model:model-value="multipleCursorPoints.start"
+                                label="起始行" required type="number"
+                                hide-details></v-text-field>
+                </v-col>
+                <v-col cols="12">
+                  <v-text-field class="input" v-model:model-value="multipleCursorPoints.end" label="结束行" required
+                                type="number"
+                                hide-details></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue" variant="text" @click="openMultipleCursorDialog = false">
+              关闭
+            </v-btn>
+            <v-btn color="blue" variant="text" @click="multipleCursors(multipleCursorPoints)">
+              确认
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-overlay>
   </div>
 </template>
 

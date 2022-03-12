@@ -1,5 +1,6 @@
 const fs = require('fs');
 const open = require('open')
+const path = require('path')
 
 function isTextFile(filepath, length) {
     const fd = fs.openSync(filepath, 'r');
@@ -22,6 +23,44 @@ globalThis._getFile = function (path) {
         return fs.readFileSync(path);
     }
     return null;
+};
+
+function writeFile(filePath, file) {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(filePath, file, () => {
+            resolve();
+        })
+    })
+}
+
+function mkdir(dirPath) {
+    return new Promise((resolve) => {
+        fs.stat(dirPath, (e, state) => {
+            if (!state) {
+                mkdir(path.resolve(dirPath, '..')).then(() => {
+                    fs.mkdir(dirPath, resolve);
+                })
+            } else {
+                resolve();
+            }
+        })
+    });
+}
+
+globalThis._saveDownloadFiles = function (dirName, files) {
+    return new Promise(async (resolve, reject) => {
+        const downloadPath = utools.getPath('downloads');
+        const dirPath = path.join(downloadPath, dirName);
+        await mkdir(dirPath)
+        let task = [];
+        files.forEach((file, fileName) => {
+            const filePath = path.join(dirPath, fileName);
+            task.push(writeFile(filePath, file))
+        })
+        Promise.all(task).then(() => {
+            resolve(dirPath);
+        })
+    })
 };
 
 window.open = function (url) {

@@ -93,6 +93,8 @@ declare interface UTools {
     removeItem(key: string): void
   }
 
+  shellShowItemInFolder(path: string): void
+
   // event
   /**
    *

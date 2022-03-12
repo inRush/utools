@@ -40,6 +40,10 @@ function onDrop(e: DragEvent) {
   color: #fff !important;
 }
 
+.v-list::-webkit-scrollbar {
+  display: none;
+}
+
 pre {
   font-family: "Roboto", sans-serif !important;
 }
