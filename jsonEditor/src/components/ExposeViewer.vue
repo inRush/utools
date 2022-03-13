@@ -39,7 +39,6 @@ const typeName = Db.get().languageTypeName;
 const optionCategoryBgRef = ref<HTMLElement>();
 const optionsPanel = ref('base')
 const showLoading = ref(false)
-let optionCategoryHeight = 0;
 const currentLanguageOption = computed(() => {
   return languageOptions[currentLanguage.value];
 })
@@ -162,9 +161,7 @@ async function exportFiles() {
     })
     showLoading.value = true;
     exportFile(typeName.value + '-' + currentLanguage.value, files).then(() => {
-      setTimeout(() => {
-        showLoading.value = false;
-      }, 500)
+      showLoading.value = false;
     });
   } catch (e) {
     console.log(e)
