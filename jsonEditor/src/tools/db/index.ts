@@ -108,24 +108,28 @@ export class Db {
   }
 
   clearTimeoutHistory(timeoutLimit: number = 7 * 24 * 3600000) {
-    if (!this._histories.value.length) {
-      return;
-    }
-    // 检查有没有超过七天的记录
-    const now = (new Date()).getTime();
-    if (now - this._histories.value[this._histories.value.length - 1].time > timeoutLimit) {
-      let lastIndex = -1;
-      for (let i = this._histories.value.length; i > 50; i--) {
-        if (now - this._histories.value[i].time > timeoutLimit) {
-          lastIndex = i;
-        } else {
-          break;
+    try {
+      if (!this._histories.value.length) {
+        return;
+      }
+      // 检查有没有超过七天的记录
+      const now = (new Date()).getTime()
+      if (now - this._histories.value[this._histories.value.length - 1].time > timeoutLimit) {
+        let lastIndex = -1;
+        for (let i = this._histories.value.length - 1; i > 0; i--) {
+          if (now - this._histories.value[i].time > timeoutLimit) {
+            lastIndex = i;
+          } else {
+            break;
+          }
+        }
+        // 删除超期的
+        if (lastIndex != -1) {
+          this._histories.value.splice(lastIndex);
         }
       }
-      // 删除超期的
-      if (lastIndex != -1) {
-        this._histories.value.splice(lastIndex);
-      }
+    } catch (e) {
+      console.log(e)
     }
   }
 }

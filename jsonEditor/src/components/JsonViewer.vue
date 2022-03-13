@@ -184,7 +184,7 @@ function onEditorMounted(editor: EditorType, monaco: MonacoType) {
   monacoEditor = editor;
 }
 
-App.enter().then((value: EnterValue) => {
+App.enter((value: EnterValue) => {
   if (value.type === 'utools') {
     const payload = value.data?.payload;
     if (payload && payload.toLowerCase() !== 'json' && payload !== '') {

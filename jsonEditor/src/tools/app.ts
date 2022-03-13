@@ -25,19 +25,17 @@ export default {
       }
     });
   },
-  enter() {
-    return new Promise<EnterValue>((resolve, reject) => {
-      if (Env.isUtools()) {
-        utools.onPluginEnter((data: any) => {
-          if (init.value) {
-            resolve({type: 'utools', data});
-          } else {
-            this.ready().then(() => resolve({type: 'utools', data}))
-          }
-        });
-      } else {
-        resolve({type: 'browser'});
-      }
-    });
+  enter(callback: Function) {
+    if (Env.isUtools()) {
+      utools.onPluginEnter((data: any) => {
+        if (init.value) {
+          callback({type: 'utools', data});
+        } else {
+          this.ready().then(() => callback({type: 'utools', data}))
+        }
+      });
+    } else {
+      callback({type: 'browser'});
+    }
   }
 }
