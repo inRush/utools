@@ -1,16 +1,12 @@
 <script lang="ts">
 import * as monaco from 'monaco-editor';
 import { defineComponent, onDeactivated, onMounted, PropType, ref, watch } from "vue";
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import JsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 
 if (!(self as any).MonacoEnvironment) {
   (self as any).MonacoEnvironment = {
     getWorker(workerId: Number, label: string) {
-      if (label === 'json') {
-        return new JsonWorker();
-      }
-      return new EditorWorker();
+      return new JsonWorker();
     },
   };
 }

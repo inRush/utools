@@ -2,6 +2,7 @@
 import prettier from "prettier/standalone";
 // @ts-ignore
 import parserJson5 from "prettier/parser-babel";
+import stripJsonComments from 'strip-json-comments';
 
 export const beautify = (code: string | undefined, {tab = 4} = {}) => {
   if (!code) {
@@ -49,6 +50,12 @@ export const clearEscape = (content: string | undefined) => {
   return content?.trim().replace(/\\\\/g, '\\').replace(/\\"/g, '"')
 }
 
+export const stripComment = function (source: string | null | undefined) {
+  if (!source) {
+    return "";
+  }
+  return stripJsonComments(source);
+}
 
 export default {
   beautify, compress, objectBeautify

@@ -88,13 +88,14 @@ $searchWrapperHeight: '84px';
   width: 100%;
   position: absolute;
   bottom: 0;
+  transform: translate3d(0, 0, 0);
 
   &.v-enter-active, &.v-leave-active {
-    transition: bottom .3s;
+    transition: transform .3s;
   }
 
   &.v-enter-from, &.v-leave-to {
-    bottom: -$panelHeight !important;
+    transform: translate3d(0, $panelHeight, 0) !important;
   }
 
 }

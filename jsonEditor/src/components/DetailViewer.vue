@@ -31,13 +31,14 @@ const props = defineProps<{
   word-break: break-all;
   word-wrap: break-word;
   white-space: break-spaces;
+  transform: translate3d(0, 0, 0);
 
   &.v-enter-active, &.v-leave-active {
-    transition: right .3s;
+    transition: transform .3s;
   }
 
   &.v-enter-from, &.v-leave-to {
-    right: -50vw !important;
+    transform: translate3d(50vw, 0, 0) !important;
   }
 
   &::-webkit-scrollbar {

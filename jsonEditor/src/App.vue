@@ -20,9 +20,7 @@ function onDrop(e: DragEvent) {
 
 <template>
   <v-app class="app" @drop.prevent="onDrop" @dragenter.prevent @dragover.prevent>
-    <v-main>
-      <json-viewer v-model:value="content"></json-viewer>
-    </v-main>
+    <json-viewer v-model:value="content"></json-viewer>
   </v-app>
 </template>
 

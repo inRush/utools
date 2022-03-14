@@ -86,8 +86,12 @@ const languageFlags = computed(() => {
   }
   return flags;
 })
-watch(() => props.json, (newValue) => {
-  debounceConvert(newValue);
+watch(() => props.json, (newValue, oldValue) => {
+  if (!oldValue || oldValue === '') {
+    convert(newValue);
+  } else {
+    debounceConvert(newValue);
+  }
 })
 watch([languageOptions, currentLanguage, typeName], () => {
   debounceConvert(props.json)
@@ -106,7 +110,7 @@ watch(optionsPanel, (newPanel) => {
 
 async function convert(data: string) {
   if (!data || data === '') {
-    data = '{}'
+    return;
   }
   try {
     const {lines: JavaCodes, annotations} = await _convert(
@@ -118,7 +122,7 @@ async function convert(data: string) {
     );
     code.value = JavaCodes.join("\n");
   } catch (e: any) {
-    code.value = e.toString()
+    code.value = 'json格式错误';
   }
 }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, nextTick, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, nextTick, reactive, ref, watchEffect } from "vue";
 import * as Json from '../tools/json';
 import Base64 from "@/tools/base64";
 import Db from '@/tools/db';
@@ -24,22 +24,22 @@ let openMultipleCursorDialog = ref(false), openHistoryPanel = ref(false), editor
 let multipleCursorPoints = reactive({start: undefined, end: undefined});
 let monacoEditor: EditorType;
 let openJsonPathViewer = ref(false);
-const detailViewerShow = ref(false);
+const exposeViewerShow = ref(false);
 const jsonPathObj = computed(() => {
   if (!openJsonPathViewer.value) {
     return {};
   }
   try {
-    return JSON.parse(props.value);
+    return JSON.parse(Json.stripComment(props.value));
   } catch (e) {
     return 'json格式错误';
   }
 });
 const jsonExposeObj = computed(() => {
-  if (!detailViewerShow.value) {
-    return '{}';
+  if (!exposeViewerShow.value) {
+    return '';
   }
-  return props.value;
+  return Json.stripComment(props.value);
 });
 // emit
 const emit = defineEmits<{
@@ -155,11 +155,11 @@ function onOpenHistoryPanel() {
 
 function jsonPathClick() {
   openJsonPathViewer.value = !openJsonPathViewer.value;
-  detailViewerShow.value = false;
+  exposeViewerShow.value = false;
 }
 
 async function languageConvert() {
-  detailViewerShow.value = !detailViewerShow.value;
+  exposeViewerShow.value = !exposeViewerShow.value;
   openJsonPathViewer.value = false;
 }
 
@@ -168,10 +168,12 @@ function onHistorySelect(history: History) {
 }
 
 function onEditorMounted(editor: EditorType, monaco: MonacoType) {
-  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-    validate: false,
-    allowComments: true
-  });
+  watchEffect(() => {
+    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+      validate: exposeViewerShow.value || openJsonPathViewer.value,
+      allowComments: true
+    });
+  })
   editor.onDidPaste(() => {
     let value = getEditor()?.getValue();
     try {
@@ -202,14 +204,14 @@ App.enter((value: EnterValue) => {
 <template>
   <div style="height: 100vh" class="d-flex flex-column ">
     <div class="editor-panel">
-      <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer||detailViewerShow}">
+      <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer||exposeViewerShow}">
         <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"
                        :editor-mounted="onEditorMounted" language="json"/>
       </div>
       <div class="other-viewer-wrapper json-path-viewer-wrapper" v-show="openJsonPathViewer" v-if="editorInit">
         <json-path-viewer :json="jsonPathObj"/>
       </div>
-      <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="detailViewerShow" v-if="editorInit">
+      <div class="other-viewer-wrapper expose-viewer-wrapper" v-show="exposeViewerShow" v-if="editorInit">
         <expose-viewer :json="jsonExposeObj"/>
       </div>
     </div>

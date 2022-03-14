@@ -3,10 +3,12 @@ import vue from '@vitejs/plugin-vue'
 import * as path from 'path';
 // @ts-ignore
 import vuetify from "@vuetify/vite-plugin";
+import { visualizer } from 'rollup-plugin-visualizer';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    visualizer(),
     // viteCommonjs(),
     vuetify({
       autoImport: true,
