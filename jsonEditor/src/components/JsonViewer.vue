@@ -193,7 +193,7 @@ App.enter((value: EnterValue) => {
     }
   }
   Db.get()?.clearTimeoutHistory();
-  editorInit.value = true
+  setTimeout(() => editorInit.value = true, 0);
 })
 
 
