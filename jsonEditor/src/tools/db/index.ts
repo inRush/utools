@@ -85,7 +85,6 @@ export class Db {
 
   _init() {
     for (let key in this) {
-      console.log(key)
       if (this.hasOwnProperty(key) && key.indexOf("_") === 0) {
         // @ts-ignore
         initAndWatch(key.replace("_", ""), this[key]);

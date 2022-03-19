@@ -191,11 +191,13 @@ App.enter((value: EnterValue) => {
     const payload = value.data?.payload;
     if (payload && payload.toLowerCase() !== 'json' && payload !== '') {
       updateValue(payload, true);
-      Db.get()?.addHistory(payload);
+      setTimeout(() => Db.get()?.addHistory(payload), 500)
     }
   }
-  Db.get()?.clearTimeoutHistory();
-  setTimeout(() => editorInit.value = true, 0);
+  !editorInit.value && setTimeout(() => {
+    editorInit.value = true;
+    Db.get()?.clearTimeoutHistory();
+  }, 0);
 })
 
 
