@@ -205,6 +205,7 @@ App.enter((value: EnterValue) => {
 
 <template>
   <div style="height: 100vh" class="d-flex flex-column ">
+
     <div class="editor-panel">
       <div class="json-editor-wrapper" :class="{'half-width':openJsonPathViewer||exposeViewerShow}">
         <monaco-editor :value="props.value" ref="editorRef" @update:value="$emit('update:value',$event)"
