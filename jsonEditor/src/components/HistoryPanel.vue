@@ -17,7 +17,8 @@
             <v-row align="center" style="width: 100vw;overflow: hidden">
               <v-col class="text-center" cols="12" sm="2">{{ $filters.timeStepFormat(item.time) }}</v-col>
               <v-col cols="12" sm="10">
-                <pre class="history-list-item-text" v-overflow="historyCfg" style="flex: 0 1">{{ item.text }}</pre>
+                <pre v-overflow="historyCfg" :data-index="index" class="history-list-item-text"
+                     style="flex: 0 1">{{ item.text.substring(0, 350) }}</pre>
               </v-col>
             </v-row>
           </v-list-item>
@@ -35,6 +36,7 @@ import MaskViewer from '@/components/MaskViewer.vue'
 import DetailViewer from './DetailViewer.vue'
 import { History } from '@/model'
 import Db from '@/tools/db'
+import { isNumber, toNumber } from "lodash";
 
 let props = withDefaults(defineProps<{
   show: boolean
@@ -59,8 +61,11 @@ let historyCfg = {
   text: '查看详情',
   maxLine: 3,
   onClick: (el: HTMLElement) => {
-    detailText.value = el.innerText;
-    detailShow.value = true;
+    let index = toNumber(el.getAttribute("data-index"));
+    if (isNumber(index)) {
+      detailText.value = histories.value[index].text;
+      detailShow.value = true;
+    }
   }
 }
 // emit

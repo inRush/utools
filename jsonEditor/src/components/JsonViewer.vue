@@ -51,8 +51,11 @@ function getEditor() {
   return monacoEditor;
 }
 
-function updateValue(value: string | undefined, format: boolean = false) {
-  emit('update:value', format ? Json.beautify(value) : value);
+function updateValue(value: string | undefined, needFormat: boolean = false) {
+  emit('update:value', value);
+  if (needFormat) {
+    setTimeout(format, 300);
+  }
 }
 
 function format() {
